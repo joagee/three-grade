@@ -11,7 +11,7 @@
  *   Old caches are purged in activate step.
  */
 
-const CACHE_VERSION = "egg-en-v1";
+const CACHE_VERSION = "egg-en-v2";
 const APP_SHELL = [
   "./",
   "./index.html",
@@ -23,9 +23,12 @@ const APP_SHELL = [
   "./scripts/egg.js",
   "./scripts/screens.js",
   "./scripts/app.js",
+  "./scripts/pwa.js",
   "./assets/icons/egg.svg",
   "./assets/icons/egg-192.png",
-  "./assets/icons/egg-512.png"
+  "./assets/icons/egg-512.png",
+  "./assets/screenshots/mobile-home.png",
+  "./assets/screenshots/wide-home.png"
 ];
 
 self.addEventListener("install", (event) => {

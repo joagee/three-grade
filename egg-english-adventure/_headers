@@ -6,10 +6,10 @@
   Content-Type: application/manifest+json; charset=utf-8
   Cache-Control: public, max-age=0, must-revalidate
 
-/*.svg
+/assets/icons/*
   Cache-Control: public, max-age=31536000, immutable
 
-/*.png
+/assets/screenshots/*
   Cache-Control: public, max-age=31536000, immutable
 
 /*.css
