@@ -1,0 +1,25 @@
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.lnk
+
+# Editors / IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Logs / temp
+*.log
+npm-debug.log*
+*.tmp
+.cache/
+.eslintcache
+
+# Node (if any tooling is added later)
+node_modules/
+
+# Cloudflare local state
+.wrangler/
