@@ -36,16 +36,16 @@
 **Description:** 用 JS 对象写出 Unit1、Unit2 结构化数据（词汇、句型、字母拼读、每关5题配置），实现 state.js 统一读写 localStorage。
 
 **Acceptance criteria:**
-- [ ] `data.js` 导出 Unit1（15 词汇、7 句型、Aa-Dd）和 Unit2（13 词汇、4 句型、Ee-Hh）
-- [ ] 每个关卡包含 5 道题的配置（题型类型 + 题目数据）
-- [ ] 关卡内容真实取自 `PEP_English_G3_up.md` 教材
-- [ ] `state.js` 提供 `loadState()`、`saveState(state)`、`updateProgress(dayId, stars)`、`unlockAccessory(id)` 等接口
-- [ ] 应用刷新后状态可完整恢复
+- [x] `data.js` 导出 Unit1（15 词汇、7 句型、Aa-Dd）和 Unit2（13 词汇、4 句型、Ee-Hh）  *(2026-07-26 通过：实际 Unit1=22词/7句/4字母，Unit2=17词/4句/4字母，均超额)*
+- [x] 每个关卡包含 5 道题的配置（题型类型 + 题目数据）  *(2026-07-26：2 Unit × 5 day × 5 = 50 题齐)*
+- [x] 关卡内容真实取自 `PEP_English_G3_up.md` 教材  *(2026-07-26 抽检：Unit1 Day1 hello/name/Aa-apple 全部对应 PEP p.35/82)*
+- [x] `state.js` 提供 `loadState()`、`saveState(state)`、`updateProgress(dayId, stars)`、`unlockAccessory(id)` 等接口  *(2026-07-26 通过：实际提供 load/save/completeDay/unlockAccessory 等 8+ 接口，命名略异语义同)*
+- [ ] 应用刷新后状态可完整恢复  *(代码侧已实现 load/save；待 Phase 2 闯关流程接入后端到端验收)*
 
 **Verification:**
-- [ ] 在浏览器控制台执行 `state.loadState()` 返回完整进度对象
-- [ ] 修改 `data.js` 后闯关内容自动变化
-- [ ] 通关后刷新页面，已通关状态保持
+- [ ] 在浏览器控制台执行 `state.loadState()` 返回完整进度对象  *(命名实为 state.load()，可在 Console 跑：`App.state.load()` 自测)*
+- [ ] 修改 `data.js` 后闯关内容自动变化  *(数据驱动结构达成；待 game.js 引擎接入端到端验证)*
+- [ ] 通关后刷新页面，已通关状态保持  *(待 Phase 2 闯关流程接入后端到端验收)*
 
 **Dependencies:** None
 
@@ -112,7 +112,7 @@
 ### Checkpoint 1: 骨架完成
 - [x] index.html 空壳能打开不报错  *(2026-07-26 通过)*
 - [x] 蛋仔角色可创建、CSS动画生效  *(2026-07-26 通过；eggBounce 2.0s)*
-- [ ] localStorage 读写正常
+- [x] localStorage 读写正常  *(2026-07-26：Task 1 测试中 name/color/expression 已成功写入并由 app.js:33 检测恢复)*
 - [ ] TTS 能朗读
 - [ ] 跟读评分可用或自动降级无错误
 - [ ] PWA 可加到桌面、可离线启动
