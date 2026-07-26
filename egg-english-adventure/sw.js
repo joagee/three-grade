@@ -11,9 +11,8 @@
  *   Old caches are purged in activate step.
  */
 
-const CACHE_VERSION = "egg-en-v2";
+const CACHE_VERSION = "egg-en-v3";
 const APP_SHELL = [
-  "./",
   "./index.html",
   "./styles.css",
   "./manifest.json",
@@ -33,8 +32,15 @@ const APP_SHELL = [
 
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_VERSION).then(cache => cache.addAll(APP_SHELL))
-      .then(() => self.skipWaiting())
+    caches.open(CACHE_VERSION).then(cache =>
+      Promise.allSettled(APP_SHELL.map(url =>
+        fetch(url, { redirect: "follow" }).then(resp => {
+          if (resp && (resp.ok || resp.type === "opaque")) {
+            return cache.put(url, resp);
+          }
+        }).catch(() => {})
+      ))
+    ).then(() => self.skipWaiting())
   );
 });
 
