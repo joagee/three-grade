@@ -401,3 +401,201 @@ button:disabled {
   color: var(--egg-yellow);
   font-weight: 800;
 }
+
+/* ============================================================
+   Task 5: 世界地图 + 关卡门
+   ============================================================ */
+
+.world-map {
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-3) var(--space-2) var(--space-5);
+  min-height: 100%;
+  background: linear-gradient(180deg,
+    color-mix(in srgb, var(--unit-color, #FFD93D) 18%, var(--bg-sky-top)) 0%,
+    var(--bg-sky-bottom) 60%,
+    color-mix(in srgb, var(--unit-color, #FFD93D) 12%, var(--bg-sky-bottom)) 100%);
+}
+
+.map-header {
+  text-align: center;
+  position: relative;
+  padding: var(--space-2) var(--space-2) var(--space-3);
+}
+
+.map-egg-corner {
+  position: absolute;
+  top: var(--space-2);
+  right: var(--space-2);
+  transform: scale(0.7);
+  transform-origin: top right;
+  opacity: 0.85;
+}
+
+.map-doors {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+  margin-top: var(--space-3);
+}
+
+.level-door {
+  position: relative;
+  border: none;
+  padding: var(--space-3) var(--space-2) var(--space-2);
+  border-radius: 28% 28% 38% 38% / 38% 38% 30% 30%;
+  background: linear-gradient(160deg,
+              color-mix(in srgb, var(--unit-color, #FFD93D) 85%, white) 0%,
+              color-mix(in srgb, var(--unit-color, #FFD93D) 65%, black) 100%);
+  color: var(--text-primary);
+  font-family: inherit;
+  box-shadow:
+    inset -6px -8px 14px rgba(0,0,0,0.15),
+    inset 4px 6px 12px rgba(255,255,255,0.4),
+    0 4px 14px rgba(0,0,0,0.18);
+  cursor: pointer;
+  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 100px;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.level-door:active {
+  transform: translateY(2px) scale(0.98);
+  box-shadow:
+    inset -4px -6px 10px rgba(0,0,0,0.18),
+    0 2px 8px rgba(0,0,0,0.18);
+}
+
+.level-door-day {
+  font-size: 13px;
+  font-weight: 600;
+  color: rgba(0,0,0,0.55);
+}
+
+.level-door-title {
+  font-size: 15px;
+  font-weight: 700;
+  margin-top: 2px;
+  color: rgba(0,0,0,0.78);
+}
+
+.level-door-stars {
+  margin-top: var(--space-1);
+  font-size: 16px;
+  letter-spacing: 2px;
+  min-height: 18px;
+}
+
+.star--on  { color: #FF8C00; text-shadow: 0 1px 2px rgba(255,140,0,0.4); }
+.star--off { color: rgba(0,0,0,0.18); }
+
+.star-flyin {
+  animation: starFlyin 0.55s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@keyframes starFlyin {
+  0%   { transform: translateY(-22px) scale(0); opacity: 0; }
+  60%  { transform: translateY(0) scale(1.25); opacity: 1; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+/* 今日挑战门：脉冲闪烁 */
+.level-door--current {
+  animation: doorPulse 1.6s ease-in-out infinite;
+  outline: 3px solid color-mix(in srgb, var(--unit-color, #FFD93D) 90%, black);
+  outline-offset: 3px;
+}
+
+@keyframes doorPulse {
+  0%, 100% {
+    transform: scale(1);
+    box-shadow:
+      inset -6px -8px 14px rgba(0,0,0,0.15),
+      inset 4px 6px 12px rgba(255,255,255,0.4),
+      0 4px 14px rgba(0,0,0,0.18);
+  }
+  50% {
+    transform: scale(1.04);
+    box-shadow:
+      inset -6px -8px 14px rgba(0,0,0,0.15),
+      inset 4px 6px 12px rgba(255,255,255,0.55),
+      0 8px 22px rgba(0,0,0,0.22);
+  }
+}
+
+/* 已通关门：稍暗淡 + 星标 */
+.level-door--done {
+  background: linear-gradient(160deg,
+              color-mix(in srgb, var(--unit-color, #FFD93D) 55%, white) 0%,
+              color-mix(in srgb, var(--unit-color, #FFD93D) 45%, black) 100%);
+  opacity: 0.92;
+}
+
+/* 未解锁门：灰色不可点 */
+.level-door--locked {
+  background: linear-gradient(160deg, #C8CCD2 0%, #94989E 100%);
+  cursor: not-allowed;
+  color: rgba(0,0,0,0.5);
+}
+
+.level-door--locked .level-door-title,
+.level-door--locked .level-door-day {
+  color: rgba(0,0,0,0.4);
+}
+
+.level-door--locked::after {
+  content: "🔒";
+  position: absolute;
+  top: 8px;
+  right: 10px;
+  font-size: 18px;
+  opacity: 0.6;
+}
+
+/* 关卡占位 toast (Task 6 接入真实引擎前用) */
+.level-toast {
+  position: fixed;
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%) scale(0.8);
+  background: white;
+  border-radius: var(--radius-lg);
+  padding: var(--space-3) var(--space-4);
+  text-align: center;
+  box-shadow: var(--shadow-pop);
+  opacity: 0;
+  transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s ease;
+  z-index: 999;
+  max-width: 80%;
+}
+
+.level-toast--show {
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 1;
+}
+
+.level-toast-title {
+  font-size: 18px;
+  font-weight: 800;
+  color: var(--text-primary);
+}
+
+.level-toast-focus {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 4px;
+}
+
+.level-toast-hint {
+  font-size: 12px;
+  color: var(--text-secondary);
+  margin-top: 8px;
+  padding: 4px 10px;
+  background: var(--bg-sky-bottom);
+  border-radius: var(--space-2);
+  display: inline-block;
+}

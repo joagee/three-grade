@@ -9,17 +9,19 @@
 
   const routes = {
     "egg-create": () => window.App.screens.renderEggCreate(appContainer),
+    "world-map": () => window.App.screens.renderWorldMap(appContainer),
     "placeholder-world": () => window.App.screens.renderPlaceholder(appContainer)
   };
 
-  function go(target) {
-    const handler = routes[target];
-    if (!handler) {
+  function go(target, params) {
+    if (!routes[target]) {
       console.warn("[app] unknown route:", target);
       return;
     }
     appContainer.innerHTML = "";
-    handler();
+    appContainer.dataset.route = target;
+    if (params) appContainer.dataset.params = JSON.stringify(params);
+    routes[target](params);
   }
 
   window.App = window.App || {};
@@ -32,7 +34,7 @@
     const s = window.App.state.data;
     const hasEgg = s.egg && s.egg.name && s.egg.name.length > 0;
     if (hasEgg) {
-      go("placeholder-world");
+      go("world-map");
     } else {
       go("egg-create");
     }

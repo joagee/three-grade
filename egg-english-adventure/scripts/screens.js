@@ -103,7 +103,7 @@
         s.egg.color = draft.color;
         s.egg.expression = draft.expression;
       });
-      window.App.go("placeholder-world");
+      window.App.go("world-map");
     });
 
     nameInput.addEventListener("input", () => {
@@ -153,9 +153,123 @@
     container.appendChild(screen);
   }
 
+  function renderWorldMap(container) {
+    const st = window.App.state.data;
+    const data = window.App.data;
+    const unit = data.getUnit(st.progress.currentUnit);
+    if (!unit) {
+      container.innerHTML = '<div class="screen"><p class="screen-subtitle">未找到 Unit 数据</p></div>';
+      return;
+    }
+
+    container.innerHTML = "";
+
+    const screen = document.createElement("div");
+    screen.className = "screen world-map";
+    screen.style.setProperty("--unit-color", unit.color);
+
+    const header = document.createElement("div");
+    header.className = "map-header";
+    const unitTitle = document.createElement("h1");
+    unitTitle.className = "screen-title";
+    unitTitle.textContent = `${unit.emoji} ${unit.titleCn}`;
+    const unitSub = document.createElement("p");
+    unitSub.className = "screen-subtitle";
+    unitSub.textContent = `${unit.title} · 第 ${st.progress.currentDay} 天`;
+    header.append(unitTitle, unitSub);
+
+    const eggCorner = document.createElement("div");
+    eggCorner.className = "map-egg-corner";
+    const eggHolder = document.createElement("div");
+    eggCorner.appendChild(eggHolder);
+    window.App.egg.render(eggHolder, {
+      color: st.egg.color,
+      expression: st.egg.expression,
+      size: "sm"
+    });
+
+    const doors = document.createElement("div");
+    doors.className = "map-doors";
+
+    const currentLevelId = window.App.state.getCurrentLevelId();
+
+    unit.levels.forEach((lv, idx) => {
+      const door = document.createElement("button");
+      door.className = "level-door";
+      door.dataset.levelId = lv.id;
+
+      const isComplete = window.App.state.isDayComplete(lv.id);
+      const isCurrent = lv.id === currentLevelId;
+      const isLocked = !isComplete && !isCurrent && (lv.day > st.progress.currentDay);
+
+      if (isComplete) door.classList.add("level-door--done");
+      if (isCurrent && !isComplete) door.classList.add("level-door--current");
+      if (isLocked) door.classList.add("level-door--locked");
+
+      door.innerHTML = `
+        <div class="level-door-day">第 ${lv.day} 关</div>
+        <div class="level-door-title">${lv.title}</div>
+        <div class="level-door-stars" aria-hidden="true"></div>
+      `;
+
+      const starsEl = door.querySelector(".level-door-stars");
+      if (isComplete) {
+        const prog = window.App.state.getDayProgress(lv.id);
+        const stars = prog && prog.stars ? Math.min(3, prog.stars) : 3;
+        for (let i = 0; i < 3; i++) {
+          const s = document.createElement("span");
+          s.className = "star" + (i < stars ? " star--on" : " star--off");
+          s.textContent = i < stars ? "★" : "☆";
+          if (i < stars) s.classList.add("star-flyin");
+          starsEl.appendChild(s);
+        }
+      }
+
+      if (isLocked) {
+        door.disabled = true;
+        door.setAttribute("aria-label", `第 ${lv.day} 关 未解锁`);
+      } else {
+        door.addEventListener("click", () => {
+          if (lv.id === currentLevelId) {
+            console.log("[map] enter today:", lv.id);
+            // Task 6 将在此处接入真实关卡页; Task 5 仅占位提示
+            showLevelPlaceholder(lv);
+          } else {
+            console.log("[map] review past day:", lv.id);
+            showLevelPlaceholder(lv);
+          }
+        });
+      }
+
+      doors.appendChild(door);
+    });
+
+    screen.append(header, eggCorner, doors);
+    container.appendChild(screen);
+  }
+
+  function showLevelPlaceholder(level) {
+    const existing = document.querySelector(".level-toast");
+    if (existing) existing.remove();
+    const toast = document.createElement("div");
+    toast.className = "level-toast";
+    toast.innerHTML = `
+      <div class="level-toast-title">${level.title}</div>
+      <div class="level-toast-focus">${level.focus}</div>
+      <div class="level-toast-hint">关卡引擎将在 Task 6 上线</div>
+    `;
+    document.body.appendChild(toast);
+    setTimeout(() => toast.classList.add("level-toast--show"), 10);
+    setTimeout(() => {
+      toast.classList.remove("level-toast--show");
+      setTimeout(() => toast.remove(), 300);
+    }, 2200);
+  }
+
   const screens = {
     renderEggCreate,
-    renderPlaceholder
+    renderPlaceholder,
+    renderWorldMap
   };
 
   window.App = window.App || {};
