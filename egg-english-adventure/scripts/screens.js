@@ -232,11 +232,10 @@
         door.addEventListener("click", () => {
           if (lv.id === currentLevelId) {
             console.log("[map] enter today:", lv.id);
-            // Task 6 将在此处接入真实关卡页; Task 5 仅占位提示
-            showLevelPlaceholder(lv);
+            window.App.go("level", { levelId: lv.id });
           } else {
             console.log("[map] review past day:", lv.id);
-            showLevelPlaceholder(lv);
+            window.App.go("level", { levelId: lv.id });
           }
         });
       }
@@ -248,28 +247,23 @@
     container.appendChild(screen);
   }
 
-  function showLevelPlaceholder(level) {
-    const existing = document.querySelector(".level-toast");
-    if (existing) existing.remove();
-    const toast = document.createElement("div");
-    toast.className = "level-toast";
-    toast.innerHTML = `
-      <div class="level-toast-title">${level.title}</div>
-      <div class="level-toast-focus">${level.focus}</div>
-      <div class="level-toast-hint">关卡引擎将在 Task 6 上线</div>
-    `;
-    document.body.appendChild(toast);
-    setTimeout(() => toast.classList.add("level-toast--show"), 10);
-    setTimeout(() => {
-      toast.classList.remove("level-toast--show");
-      setTimeout(() => toast.remove(), 300);
-    }, 2200);
+  function renderLevel(container, params) {
+    const levelId = params && params.levelId;
+    if (!levelId) {
+      console.warn("[screens] renderLevel: missing levelId");
+      window.App.go("world-map");
+      return;
+    }
+    window.App.game.startLevel(levelId, container, (summary) => {
+      console.log("[screens] level end:", summary);
+    });
   }
 
   const screens = {
     renderEggCreate,
     renderPlaceholder,
-    renderWorldMap
+    renderWorldMap,
+    renderLevel
   };
 
   window.App = window.App || {};

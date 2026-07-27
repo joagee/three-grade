@@ -42,11 +42,12 @@ html, body {
 
 .app-shell {
   width: 100%;
-  height: 100%;
+  height: 100dvh;
   max-width: 480px;
   margin: 0 auto;
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 button {
@@ -86,12 +87,12 @@ button:disabled {
 
 .screen {
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: var(--space-4);
+  justify-content: flex-start;
+  padding: var(--space-5) var(--space-4) var(--space-4);
   animation: fadeIn 0.35s ease;
 }
 
@@ -121,6 +122,23 @@ button:disabled {
   font-size: 22px;
   width: 100%;
   max-width: 280px;
+}
+
+/* ===== Responsive: 小高度屏(手机竖屏含 Safari 顶栏) ===== */
+@media (max-height: 700px) {
+  .screen {
+    padding: var(--space-3) var(--space-3) var(--space-3);
+    justify-content: flex-start;
+  }
+  .screen-title       { font-size: 22px; margin-bottom: var(--space-1); }
+  .screen-subtitle    { font-size: 14px; margin-bottom: var(--space-3); }
+  .egg-stage          { height: 170px; margin-bottom: var(--space-2); }
+  .egg-size-lg         { width: 150px; height: 150px; }
+  .egg-name-input     { padding: var(--space-2) var(--space-3); font-size: 15px; }
+  .picker-row         { gap: var(--space-2); }
+  .color-swatch       { width: 38px; height: 38px; }
+  .exp-swatch         { padding: var(--space-1) var(--space-2); font-size: 13px; }
+  .btn-large          { padding: var(--space-3) var(--space-4); font-size: 18px; }
 }
 
 /* ===== Egg Character ===== */
@@ -598,4 +616,299 @@ button:disabled {
   background: var(--bg-sky-bottom);
   border-radius: var(--space-2);
   display: inline-block;
+}
+
+/* ============================================================
+   Task 6: 关卡引擎 + 题目卡片
+   ============================================================ */
+
+.game-screen {
+  justify-content: flex-start;
+  padding: var(--space-3) var(--space-3) var(--space-4);
+}
+
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  margin-bottom: var(--space-1);
+}
+
+.game-progress {
+  display: flex;
+  align-items: baseline;
+  gap: 2px;
+  font-weight: 600;
+}
+.game-progress-current { font-size: 22px; color: var(--text-primary); }
+.game-progress-sep     { font-size: 16px; color: var(--text-secondary); }
+.game-progress-total   { font-size: 16px; color: var(--text-secondary); }
+.game-level-name       { font-size: 14px; color: var(--text-secondary); }
+
+.game-progress-bar {
+  width: 100%;
+  height: 6px;
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 3px;
+  overflow: hidden;
+}
+.game-progress-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--egg-yellow), #FFB347);
+  border-radius: 3px;
+  transition: width 0.4s ease;
+}
+
+.quiz-area {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: var(--space-2) 0;
+  text-align: center;
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.quiz-area--correct {
+  animation: quizRight 0.4s ease;
+}
+.quiz-area--wrong {
+  animation: quizWrong 0.4s ease;
+}
+@keyframes quizRight {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.3; transform: scale(0.96); }
+}
+@keyframes quizWrong {
+  0%, 100% { transform: translateX(0); }
+  20%, 60% { transform: translateX(-8px); }
+  40%, 80% { transform: translateX(8px); }
+}
+
+.quiz-prompt {
+  font-size: 17px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: var(--space-3);
+}
+
+.quiz-replay {
+  font-size: 14px;
+  padding: var(--space-1) var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.quiz-image {
+  font-size: 80px;
+  margin: var(--space-2) 0 var(--space-3);
+  line-height: 1;
+}
+
+.quiz-options-3 {
+  display: flex;
+  gap: var(--space-3);
+  justify-content: center;
+  width: 100%;
+  margin-top: var(--space-2);
+}
+
+.quiz-option-card {
+  background: white;
+  border-radius: var(--radius-md);
+  padding: var(--space-3) var(--space-2);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-1);
+  box-shadow: var(--shadow-soft);
+  width: 28%;
+  max-width: 130px;
+  transition: transform 0.15s ease;
+}
+.quiz-option-card:active { transform: scale(0.94); }
+
+.quiz-option-emoji {
+  font-size: 50px;
+  line-height: 1;
+}
+.quiz-option-label {
+  font-size: 14px;
+  color: var(--text-secondary);
+  font-weight: 600;
+}
+
+.quiz-options-words {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  width: 100%;
+  max-width: 280px;
+}
+
+.quiz-option-word {
+  background: white;
+  color: var(--text-primary);
+  padding: var(--space-3) var(--space-4);
+  font-size: 22px;
+  font-weight: 700;
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+  width: 100%;
+}
+.quiz-option-word:active { transform: scale(0.97); }
+
+.quiz-target {
+  font-size: 36px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin: var(--space-2) 0 var(--space-1);
+}
+.quiz-phonetic {
+  font-size: 18px;
+  color: var(--text-secondary);
+  font-style: italic;
+  margin-bottom: var(--space-3);
+}
+
+.quiz-read-buttons {
+  display: flex;
+  gap: var(--space-3);
+  margin-bottom: var(--space-3);
+}
+
+.quiz-demoBtn,
+.quiz-mic {
+  font-size: 15px;
+  padding: var(--space-2) var(--space-4);
+  background: white;
+  color: var(--text-primary);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-soft);
+}
+.quiz-mic {
+  background: var(--egg-yellow);
+}
+.quiz-mic:disabled {
+  background: #E8E8E8;
+  color: var(--text-secondary);
+}
+
+.quiz-read-result {
+  min-height: 50px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  color: var(--text-secondary);
+}
+
+.quiz-listening {
+  font-size: 14px;
+  color: var(--text-secondary);
+  animation: pulse 1s ease-in-out infinite;
+}
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+
+.quiz-score {
+  font-weight: 800;
+  font-size: 18px;
+}
+.quiz-score-pass { color: #4CAF50; }
+.quiz-score-fail { color: #E57373; }
+.quiz-score-soft { color: #FFA726; }
+
+.quiz-encourage {
+  color: var(--text-primary);
+  margin-top: var(--space-1);
+  font-size: 15px;
+}
+
+.quiz-skip-hint {
+  color: var(--text-secondary);
+  font-size: 14px;
+  padding: var(--space-3);
+  background: rgba(255, 255, 255, 0.5);
+  border-radius: var(--space-2);
+}
+
+/* ===== 蛋仔欢呼 / 摔倒 (Task 6 关键视觉反馈) ===== */
+
+.game-egg-stage {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  height: 140px;
+  margin-bottom: var(--space-2);
+}
+
+.egg.egg-cheer {
+  animation: eggCheer 0.5s ease-out 2;
+}
+@keyframes eggCheer {
+  0%, 100% { transform: translateY(0) rotate(0) scale(1); }
+  25%  { transform: translateY(-16px) rotate(-4deg) scale(1.06); }
+  50%  { transform: translateY(0) rotate(0) scale(1); }
+  75%  { transform: translateY(-12px) rotate(4deg) scale(1.04); }
+}
+
+.egg.egg-fall {
+  animation: eggFall 0.9s ease-in;
+}
+@keyframes eggFall {
+  0%   { transform: rotate(0) translateY(0); }
+  25%  { transform: rotate(-10deg) translateY(2px); }
+  50%  { transform: rotate(30deg) translateY(8px); }
+  60%  { transform: rotate(40deg) translateY(12px); }
+  75%  { transform: rotate(20deg) translateY(8px); }
+  100% { transform: rotate(0) translateY(0); }
+}
+
+/* ===== 通关结算页 ===== */
+
+.game-summary {
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.game-stars {
+  font-size: 56px;
+  color: #FF8C00;
+  letter-spacing: 6px;
+  margin-bottom: var(--space-3);
+  animation: starFlyin 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+.game-summary-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: var(--text-primary);
+  margin-bottom: var(--space-1);
+}
+
+.game-summary-sub {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-4);
+}
+
+.game-back-btn {
+  margin-top: var(--space-3);
+}
+
+/* 响应式: 小高度屏关卡页缩量 */
+@media (max-height: 700px) {
+  .quiz-image      { font-size: 60px; }
+  .quiz-target     { font-size: 28px; }
+  .quiz-option-emoji { font-size: 38px; }
+  .quiz-option-word { font-size: 18px; padding: var(--space-2) var(--space-3); }
+  .game-egg-stage  { height: 100px; }
+  .game-summary .game-stars { font-size: 42px; }
 }

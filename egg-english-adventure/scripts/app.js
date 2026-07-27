@@ -10,6 +10,7 @@
   const routes = {
     "egg-create": () => window.App.screens.renderEggCreate(appContainer),
     "world-map": () => window.App.screens.renderWorldMap(appContainer),
+    "level": (params) => window.App.screens.renderLevel(appContainer, params),
     "placeholder-world": () => window.App.screens.renderPlaceholder(appContainer)
   };
 
