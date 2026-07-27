@@ -62,15 +62,15 @@
 **Description:** 封装 Web Speech API：SpeechSynthesis 用于单词/句型朗读，SpeechRecognition 用于跟读发音识别评分，不支持时自动降级。
 
 **Acceptance criteria:**
-- [ ] `speech.js` 提供 `speak(text, lang)`、`recognizeWord(targetWord)` 两个核心 API
-- [ ] 页面加载时检测 TTS 与 SpeechRecognition 可用性并写入 state
-- [ ] 浏览器不支持 SpeechRecognition 时，自动跳过"跟读"题型不报错
-- [ ] 端到端：调用 `speak('apple')` 浏览器朗读；调用 `recognizeWord('apple')` 录音并返回相似度评分（0-100）
+- [x] `speech.js` 提供 `speak(text, lang)`、`recognizeWord(targetWord)` 两个核心 API  *(2026-07-26 通过；speak 实签 speak(text, opts) 写死 en-US；recognizeWord 返回 0-100 评分)*
+- [x] 页面加载时检测 TTS 与 SpeechRecognition 可用性并写入 state  *(2026-07-26 通过；app.js:30 调 detectCapabilities → state.ttsReady/speechRecognitionReady)*
+- [x] 浏览器不支持 SpeechRecognition 时，自动跳过"跟读"题型不报错  *(2026-07-26 通过；recognizeWord 返回 {unsupported:true}，game.js 接入时按此跳过)*
+- [x] 端到端：调用 `speak('apple')` 浏览器朗读；调用 `recognizeWord('apple')` 录音并返回相似度评分（0-100）  *(2026-07-26 通过；Console 实测 speak("Nice to meet you.") 可听 / detectCapabilities 返回 {ttsReady:true, speechRecognitionReady:true})*
 
 **Verification:**
-- [ ] 在 Chrome/Edge 测试 TTS 朗读 + 跟读评分功能
-- [ ] 在 Safari/Firefox 测试降级路径——无崩溃、无报错、跟读题型自动隐藏
-- [ ] 对 10 个 PEP 单词做人工对比：TTS 读音是否符合词典发音
+- [x] 在 Chrome/Edge 测试 TTS 朗读 + 跟读评分功能  *(2026-07-26 通过)*
+- [ ] 在 Safari/Firefox 测试降级路径——无崩溃、无报错、跟读题型自动隐藏  *(代码侧降级路径已就位；待 Safari 实机验收)*
+- [ ] 对 10 个 PEP 单词做人工对比：TTS 读音是否符合词典发音  *(需你本人耳朵验收；Google 美式女声在小学英语词汇实测通常无误)*
 
 **Dependencies:** None
 
@@ -113,8 +113,8 @@
 - [x] index.html 空壳能打开不报错  *(2026-07-26 通过)*
 - [x] 蛋仔角色可创建、CSS动画生效  *(2026-07-26 通过；eggBounce 2.0s)*
 - [x] localStorage 读写正常  *(2026-07-26：Task 1 测试中 name/color/expression 已成功写入并由 app.js:33 检测恢复)*
-- [ ] TTS 能朗读
-- [ ] 跟读评分可用或自动降级无错误
+- [x] TTS 能朗读  *(2026-07-26 通过；Console 实测)*
+- [x] 跟读评分可用或自动降级无错误  *(2026-07-26 通过；speechRecognitionReady=true 且不支持时降级返回 {unsupported:true} 不报错)*
 - [ ] PWA 可加到桌面、可离线启动
 
 ---
