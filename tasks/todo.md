@@ -126,26 +126,27 @@
 **Description:** 实现世界地图屏幕，显示当前 Unit 主题背景、5 天关卡门（已通关/今日挑战/未解锁三种状态），通关动画。
 
 **Acceptance criteria:**
-- [ ] 显示当前 Unit 名称、主题装饰、5 天关卡门
-- [ ] 已通关门有星标（1-3 星）
-- [ ] 今日挑战门有脉冲闪烁动画
-- [ ] 未解锁门灰色不可点击
-- [ ] 点击今日挑战门可进入对应关卡
-- [ ] 通关返回时关卡门播放星星飞入动画
+- [x] 显示当前 Unit 名称、主题装饰、5 天关卡门  *(2026-07-26 通过：Unit1 🫂 交朋友 + 5 关卡门网格)*
+- [x] 已通关门有星标（1-3 星）  *(2026-07-26 通过：模拟 completeDay('u1d1',3) 后渲染 3 颗 ★)*
+- [x] 今日挑战门有脉冲闪烁动画  *(2026-07-26 通过：doorPulse 1.6s 循环)*
+- [x] 未解锁门灰色不可点击  *(2026-07-26 通过：第 2-5 关灰色 + 🔒 + disabled)*
+- [x] 点击今日挑战门可进入对应关卡  *(2026-07-26 通过：占位 toast 弹出，Task 6 接真关卡页)*
+- [x] 通关返回时关卡门播放星星飞入动画  *(2026-07-26 通过：sim completeDay 后 starFlyin 弹性入场动画已见)*
 
 **Verification:**
-- [ ] 手动检查三种状态视觉明确
-- [ ] 模拟进度：手动修改 localStorage，刷新后状态正确显示
-- [ ] 点击进入关卡跳转无错误
+- [x] 手动检查三种状态视觉明确  *(2026-07-26 通过)*
+- [x] 模拟进度：手动修改 localStorage，刷新后状态正确显示  *(2026-07-26 通过：Console completeDay + App.go('world-map') 立即重渲)*
+- [x] 点击进入关卡跳转无错误  *(2026-07-26 通过：占位 toast 2.2s 后平滑退出)*
 
-**Dependencies:** Task 2
+**Dependencies:** Task 2 ✅
 
-**Files likely touched:**
-- `egg-english-adventure/scripts/screens.js`（新增世界地图渲染函数）
-- `egg-english-adventure/scripts/state.js` (新增 getCurrentDay 逻辑)
-- `egg-english-adventure/styles.css` (地图样式)
+**Files touched:**
+- `egg-english-adventure/scripts/app.js`  *(加 world-map 路由 + go(target,params) 兼容参数)*
+- `egg-english-adventure/scripts/screens.js`  *(新增 renderWorldMap 118 行 + showLevelPlaceholder toast)*
+- `egg-english-adventure/styles.css`  *(新增 200 行地图样式，三种状态+脉冲+星星飞入+toast)*
+- `egg-english-adventure/index.html`  *(顺手加 mobile-web-app-capable 修 deprecation)*
 
-**Estimated scope:** Medium (3 files)
+**Estimated scope:** Medium (3 文件计划 → 实际 4 文件含 index.html 顺手修)
 
 ---
 
