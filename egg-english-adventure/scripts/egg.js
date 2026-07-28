@@ -45,7 +45,7 @@ function renderEgg(container, options = {}) {
 
   const egg = document.createElement("div");
   egg.className = "egg egg-size-" + sizeKey;
-  egg.style.setProperty("--egg-size", size + "px");
+  // 只设置颜色, 不用内联 size 覆盖 CSS class; 让 styles.css 媒体查询能自由缩
   egg.style.setProperty("--egg-body", palette.body);
   egg.style.setProperty("--egg-body-dark", palette.bodyDark);
   egg.style.setProperty("--egg-shade", palette.shade);

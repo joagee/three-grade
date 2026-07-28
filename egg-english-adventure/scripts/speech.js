@@ -53,14 +53,16 @@
     setTimeout(() => resolve(!!preferredVoice), 1000);
   });
 
-  // Android Chrome autoplay unlock: 首次用户交互时, 用空 utterance 触发音频通道
+  // Android Chrome autoplay unlock: 首次用户交互时, 用极短 utterance 触发音频通道
+  // 用 "ok" 而非空串 (Android Chrome 对空串 utterance 可能不解锁)
   let unlocked = false;
   function unlockAudio() {
     if (unlocked || !hasSynth) return;
     unlocked = true;
     try {
-      const u = new SpeechSynthesisUtterance("");
-      u.volume = 0;
+      const u = new SpeechSynthesisUtterance("ok");
+      u.volume = 0.01;
+      u.rate = 2;
       synth.speak(u);
     } catch (e) {}
   }
@@ -81,9 +83,13 @@
         if (preferredVoice) u.voice = preferredVoice;
         u.onend = () => resolve(true);
         u.onerror = () => resolve(false);
-        // Android Chrome 偶发: synth 暂停状态需先 cancel
-        if (synth.speaking) synth.cancel();
-        synth.speak(u);
+        // Android Chrome 偶发: synth 暂停状态需先 cancel + 等 50ms 避免 race
+        if (synth.speaking || synth.pending) {
+          synth.cancel();
+          setTimeout(() => synth.speak(u), 60);
+        } else {
+          synth.speak(u);
+        }
       });
     });
   }
