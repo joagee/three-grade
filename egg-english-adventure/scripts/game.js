@@ -98,6 +98,8 @@
     if (!ch) { onPass(); return; }
 
     switch (ch.type) {
+      case "learn-intro":
+        return renderLearnIntro(quizArea, eggHolder, ch, st, onPass);
       case "listen-choose":
         return renderListenChoose(quizArea, eggHolder, ch, st, onPass);
       case "look-choose":
@@ -115,9 +117,9 @@
   }
 
   function getWordFromChallenge(ch) {
+    if (ch.word) return ch.word;
     if (ch.audio) return ch.audio;
     if (ch.target) return ch.target;
-    if (ch.word) return ch.word;
     if (ch.options && typeof ch.options[ch.answerIndex] === "string") return ch.options[ch.answerIndex];
     if (ch.pairs && ch.pairs[0] && ch.pairs[0].word) return ch.pairs[0].word;
     return "";
@@ -125,6 +127,36 @@
 
   function recordWord(word) {
     if (word && _attemptedWords.indexOf(word) === -1) _attemptedWords.push(word);
+  }
+
+
+  // ===== 入门识词 (不判分) =====
+  function renderLearnIntro(quizArea, eggHolder, ch, st, onPass) {
+    recordWord(ch.word);
+
+    quizArea.innerHTML = `
+      <div class="quiz-prompt">先听一听，跟着读一遍</div>
+      <div class="quiz-image">${ch.emoji}</div>
+      <div class="quiz-target">${ch.word}</div>
+      <div class="quiz-cn">${ch.cn || ""}</div>
+      ${ch.phonetic ? `<div class="quiz-phonetic">${ch.phonetic}</div>` : ""}
+      <div class="quiz-read-buttons">
+        <button class="quiz-demoBtn">🔊 听发音</button>
+        <button class="quiz-learn-next">我学会了 ✓</button>
+      </div>
+    `;
+
+    // 进题时自动朗读一次
+    window.App.speech.speak(ch.word);
+
+    quizArea.querySelector(".quiz-demoBtn").addEventListener("click", () => {
+      window.App.speech.speak(ch.word);
+    });
+    // 任意按钮点击都视为通过, 不判分
+    quizArea.querySelector(".quiz-learn-next").addEventListener("click", () => {
+      // 直接进下一题, 不计 correctCount (跟读回顾题算重试过不算)
+      onPass();
+    });
   }
 
 
@@ -270,11 +302,13 @@
 
   function renderChallengeByType(ch, quizArea, eggHolder, st, onPass) {
     switch (ch.type) {
+      case "learn-intro":
+        // learn-intro 不会答错, 不会进此分支, 仅防漏
+        return renderLearnIntro(quizArea, eggHolder, ch, st, onPass);
       case "listen-choose": return renderListenChoose(quizArea, eggHolder, ch, st, onPass);
       case "look-choose":   return renderLookChoose(quizArea, eggHolder, ch, st, onPass);
       case "read-after":    return renderReadAfter(quizArea, eggHolder, ch, st, onPass);
       default:
-        // 答错是只可能在 listen/look/read-after 题 (Task 7 题型只直接 onPass)
         onPass();
     }
   }

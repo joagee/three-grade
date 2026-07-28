@@ -7,6 +7,7 @@
  *   UNITS = [ { id, title, theme, emoji, words, sentences, letters, levels: [ { id, day, focus, challenges: [ ... ] } ] } ]
  *
  * Challenge types (consumed by game.js in Task 5+):
+ *   - "learn-intro"   - 入门识词 : { type, word, cn, emoji, phonetic }  // 孩子第一题先听+看，不判分
  *   - "listen-choose"  - 听音选图 : { type, audio (word), options: [ {img, label} ], answerIndex }
  *   - "look-choose"    - 看图选词 : { type, image (emoji), options: [ "word" ], answerIndex }
  *   - "read-after"     - 跟读闯关 : { type, target (word), phonetic }
@@ -75,6 +76,13 @@ const UNITS = [
         title: "第一次见面",
         focus: "问候与自我介绍",
         challenges: [
+          {
+            type: "learn-intro",
+            word: "hello",
+            cn: "你好",
+            emoji: "👋",
+            phonetic: "/həˈləʊ/"
+          },
           {
             type: "listen-choose",
             audio: "hello",

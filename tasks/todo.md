@@ -43,7 +43,7 @@
 - [ ] 应用刷新后状态可完整恢复  *(代码侧已实现 load/save；待 Phase 2 闯关流程接入后端到端验收)*
 
 **Verification:**
-- [ ] 在浏览器控制台执行 `state.loadState()` 返回完整进度对象  *(命名实为 state.load()，可在 Console 跑：`App.state.load()` 自测)*
+- [ ] 在浏览器控制台执行 `state.loadState()` 返回完整进度对象  *(命名实为 state.load()，Console 跑：`App.state.load()` 自测；能力探测：`App.state.data.speechRecognitionReady`)*
 - [ ] 修改 `data.js` 后闯关内容自动变化  *(数据驱动结构达成；待 game.js 引擎接入端到端验证)*
 - [ ] 通关后刷新页面，已通关状态保持  *(待 Phase 2 闯关流程接入后端到端验收)*
 

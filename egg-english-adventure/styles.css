@@ -125,20 +125,52 @@ button:disabled {
 }
 
 /* ===== Responsive: 小高度屏(手机竖屏含 Safari 顶栏) ===== */
-@media (max-height: 700px) {
+/* 750px 以下: 中等收缩 */
+@media (max-height: 750px) {
   .screen {
     padding: var(--space-3) var(--space-3) var(--space-3);
     justify-content: flex-start;
   }
-  .screen-title       { font-size: 22px; margin-bottom: var(--space-1); }
+  .screen-title       { font-size: 24px; margin-bottom: var(--space-2); }
   .screen-subtitle    { font-size: 14px; margin-bottom: var(--space-3); }
-  .egg-stage          { height: 170px; margin-bottom: var(--space-2); }
-  .egg-size-lg         { width: 150px; height: 150px; }
-  .egg-name-input     { padding: var(--space-2) var(--space-3); font-size: 15px; }
-  .picker-row         { gap: var(--space-2); }
-  .color-swatch       { width: 38px; height: 38px; }
+  .egg-stage          { height: 190px; margin-bottom: var(--space-3); }
+  .egg-size-lg         { width: 160px; height: 160px; }
+  .egg-name-input     { padding: var(--space-2) var(--space-3); font-size: 15px; margin-bottom: var(--space-2); }
+  .picker-label       { font-size: 13px; margin-bottom: var(--space-1); }
+  .picker-row         { gap: var(--space-2); margin-bottom: var(--space-2); }
+  .color-swatch       { width: 40px; height: 40px; }
+  .exp-swatch         { padding: var(--space-1) var(--space-3); font-size: 14px; }
+  .btn-large          { padding: var(--space-3) var(--space-4); font-size: 19px; max-width: 240px; margin-top: var(--space-2); }
+}
+
+/* 700px 以下: 进一步收缩 (iPhone SE/8 Plus 顶栏占多) */
+@media (max-height: 700px) {
+  .screen             { padding: var(--space-2) var(--space-3) var(--space-3); }
+  .screen-title       { font-size: 22px; margin-bottom: var(--space-1); }
+  .screen-subtitle    { font-size: 13px; margin-bottom: var(--space-2); }
+  .egg-stage          { height: 160px; margin-bottom: var(--space-2); }
+  .egg-size-lg         { width: 140px; height: 140px; }
+  .egg-name-input     { padding: var(--space-1) var(--space-3); font-size: 14px; margin-bottom: var(--space-2); }
+  .picker-label       { font-size: 12px; }
+  .picker-row         { gap: var(--space-1); margin-bottom: var(--space-2); }
+  .color-swatch       { width: 36px; height: 36px; }
   .exp-swatch         { padding: var(--space-1) var(--space-2); font-size: 13px; }
-  .btn-large          { padding: var(--space-3) var(--space-4); font-size: 18px; }
+  .btn-large          { padding: var(--space-2) var(--space-4); font-size: 17px; max-width: 220px; }
+}
+
+/* 640px 以下: 紧凑 (Redmi/小屏手机) */
+@media (max-height: 640px) {
+  .screen             { padding: var(--space-1) var(--space-2) var(--space-2); }
+  .screen-title       { font-size: 19px; margin-bottom: 2px; }
+  .screen-subtitle    { font-size: 12px; margin-bottom: var(--space-1); }
+  .egg-stage          { height: 120px; margin-bottom: var(--space-1); }
+  .egg-size-lg         { width: 110px; height: 110px; }
+  .egg-name-input     { padding: 4px var(--space-2); font-size: 13px; margin-bottom: var(--space-1); }
+  .picker-label       { font-size: 11px; margin-bottom: 0; }
+  .picker-row         { gap: var(--space-1); margin-bottom: var(--space-1); }
+  .color-swatch       { width: 32px; height: 32px; }
+  .exp-swatch         { padding: 2px var(--space-2); font-size: 12px; }
+  .btn-large          { padding: var(--space-2) var(--space-3); font-size: 16px; max-width: 200px; margin-top: var(--space-1); }
 }
 
 /* ===== Egg Character ===== */
@@ -828,6 +860,18 @@ button:disabled {
   color: var(--text-primary);
   margin-top: var(--space-1);
   font-size: 15px;
+}
+
+.quiz-cn {
+  font-size: 16px;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-2);
+}
+
+.quiz-learn-next {
+  background: #95E06C;
+  color: var(--text-primary);
+  font-weight: 700;
 }
 
 .quiz-skip-hint {

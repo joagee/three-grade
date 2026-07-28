@@ -30,35 +30,61 @@
   const hasRecognition = !!SpeechRecognitionCtor;
 
   let preferredVoice = null;
+  let voicesReady = new Promise(resolve => {
+    if (!hasSynth) { resolve(false); return; }
+    const tryPick = () => {
+      const voices = synth.getVoices();
+      if (voices && voices.length) {
+        preferredVoice =
+          voices.find(v => v.lang === "en-US" && /female|Google/i.test(v.name)) ||
+          voices.find(v => v.lang === "en-US") ||
+          voices.find(v => v.lang && v.lang.indexOf("en") === 0) ||
+          voices.find(v => v.lang && /en/i.test(v.lang)) ||
+          voices[0];
+        resolve(true);
+        return true;
+      }
+      return false;
+    };
+    if (tryPick()) return;
+    // Android Chrome: voices 异步加载, 等 onvoiceschanged
+    synth.onvoiceschanged = () => { tryPick(); };
+    // 兜底: 1 秒后无论如何 resolve (避免 speak 永远卡住)
+    setTimeout(() => resolve(!!preferredVoice), 1000);
+  });
 
-  function pickVoice() {
-    if (!hasSynth) return null;
-    const voices = synth.getVoices();
-    if (!voices.length) return null;
-    preferredVoice =
-      voices.find(v => v.lang === "en-US" && /female|Google/i.test(v.name)) ||
-      voices.find(v => v.lang === "en-US") ||
-      voices.find(v => v.lang.indexOf("en") === 0) ||
-      voices[0];
-    return preferredVoice;
+  // Android Chrome autoplay unlock: 首次用户交互时, 用空 utterance 触发音频通道
+  let unlocked = false;
+  function unlockAudio() {
+    if (unlocked || !hasSynth) return;
+    unlocked = true;
+    try {
+      const u = new SpeechSynthesisUtterance("");
+      u.volume = 0;
+      synth.speak(u);
+    } catch (e) {}
   }
-
   if (hasSynth) {
-    pickVoice();
-    synth.onvoiceschanged = pickVoice;
+    ["touchstart", "touchend", "click", "keydown"].forEach(ev =>
+      document.addEventListener(ev, unlockAudio, { once: true, passive: true })
+    );
   }
 
   function speak(text, opts = {}) {
     if (!hasSynth) return Promise.resolve(false);
-    return new Promise(resolve => {
-      const u = new SpeechSynthesisUtterance(text);
-      u.lang = "en-US";
-      u.rate = opts.rate || 0.9;
-      u.pitch = opts.pitch || 1;
-      if (preferredVoice) u.voice = preferredVoice;
-      u.onend = () => resolve(true);
-      u.onerror = () => resolve(false);
-      synth.speak(u);
+    return voicesReady.then(ok => {
+      return new Promise(resolve => {
+        const u = new SpeechSynthesisUtterance(text);
+        u.lang = "en-US";
+        u.rate = opts.rate || 0.9;
+        u.pitch = opts.pitch || 1;
+        if (preferredVoice) u.voice = preferredVoice;
+        u.onend = () => resolve(true);
+        u.onerror = () => resolve(false);
+        // Android Chrome 偶发: synth 暂停状态需先 cancel
+        if (synth.speaking) synth.cancel();
+        synth.speak(u);
+      });
     });
   }
 
