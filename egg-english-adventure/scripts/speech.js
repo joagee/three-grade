@@ -200,8 +200,7 @@
     hasSynth,
     hasRecognition,
     similarity,
-    scoreTargetAgainst,
-    pickVoice
+    scoreTargetAgainst
   };
 
   window.App = window.App || {};
