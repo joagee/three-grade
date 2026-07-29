@@ -26,7 +26,8 @@ const defaultState = {
   },
   dailyReport: [],
   ttsReady: false,
-  speechRecognitionReady: false
+  speechRecognitionReady: false,
+  ttsEngineFallback: false
 };
 
 const state = {

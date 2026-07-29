@@ -72,18 +72,29 @@
     );
   }
 
+  function hasEnglishVoice() {
+    if (!synth) return false;
+    const voices = synth.getVoices();
+    return voices && voices.length > 0 && voices.some(v => v.lang && v.lang.indexOf("en") === 0);
+  }
+
   function speak(text, opts = {}) {
-    if (!hasSynth) return Promise.resolve(false);
+    const engine = opts.engine || "auto";
+    if (engine === "google") return speakGoogle(text, opts);
+    if (!hasSynth) return engine === "auto" ? speakGoogle(text, opts) : Promise.resolve(false);
     return voicesReady.then(ok => {
+      if (!ok || !hasEnglishVoice()) {
+        if (engine !== "native") return speakGoogle(text, opts);
+        return Promise.resolve(false);
+      }
       return new Promise(resolve => {
         const u = new SpeechSynthesisUtterance(text);
         u.lang = "en-US";
         u.rate = opts.rate || 0.9;
         u.pitch = opts.pitch || 1;
-        if (preferredVoice) u.voice = preferredVoice;
+        if (preferredVoice && hasEnglishVoice()) u.voice = preferredVoice;
         u.onend = () => resolve(true);
         u.onerror = () => resolve(false);
-        // Android Chrome 偶发: synth 暂停状态需先 cancel + 等 50ms 避免 race
         if (synth.speaking || synth.pending) {
           synth.cancel();
           setTimeout(() => synth.speak(u), 60);
@@ -92,6 +103,25 @@
         }
       });
     });
+  }
+
+  function speakGoogle(text, opts = {}) {
+    const lang = opts.lang || "en-US";
+    return fetch("/api/tts?text=" + encodeURIComponent(text) + "&lang=" + lang)
+      .then(r => {
+        if (!r.ok) throw new Error("TTS API error: " + r.status);
+        return r.blob();
+      })
+      .then(blob => {
+        const audioUrl = URL.createObjectURL(blob);
+        return new Promise(resolve => {
+          const audio = new Audio(audioUrl);
+          audio.onended = () => { URL.revokeObjectURL(audioUrl); resolve(true); };
+          audio.onerror = () => { URL.revokeObjectURL(audioUrl); resolve(false); };
+          audio.play().catch(() => { URL.revokeObjectURL(audioUrl); resolve(false); });
+        });
+      })
+      .catch(() => false);
   }
 
   /**
@@ -190,6 +220,12 @@
 
   function detectCapabilities() {
     const st = window.App && window.App.state;
+    voicesReady.then(() => {
+      const fallback = !hasSynth || !hasEnglishVoice();
+      if (st) {
+        st.update(s => { s.ttsEngineFallback = fallback; });
+      }
+    });
     if (st) {
       st.update(s => {
         s.ttsReady = hasSynth;
@@ -201,12 +237,14 @@
 
   const speech = {
     speak,
+    speakGoogle,
     recognizeWord,
     detectCapabilities,
     hasSynth,
     hasRecognition,
     similarity,
-    scoreTargetAgainst
+    scoreTargetAgainst,
+    hasEnglishVoice
   };
 
   window.App = window.App || {};
