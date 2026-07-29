@@ -92,7 +92,7 @@ button:disabled {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  padding: var(--space-5) var(--space-4) var(--space-4);
+  padding: clamp(8px, 2.5vh, 20px) clamp(12px, 4vw, 18px) clamp(8px, 2vh, 16px);
   animation: fadeIn 0.35s ease;
 }
 
@@ -102,75 +102,42 @@ button:disabled {
 }
 
 .screen-title {
-  font-size: 28px;
+  font-size: clamp(20px, 5vw, 26px);
   font-weight: 800;
-  margin-bottom: var(--space-3);
+  margin-bottom: clamp(2px, 0.8vh, 8px);
   text-align: center;
   color: var(--text-primary);
   letter-spacing: 0.5px;
 }
 
 .screen-subtitle {
-  font-size: 16px;
+  font-size: clamp(13px, 3.2vw, 15px);
   color: var(--text-secondary);
   text-align: center;
-  margin-bottom: var(--space-5);
+  margin-bottom: clamp(8px, 2vh, 18px);
 }
 
 .btn-large {
-  padding: var(--space-4) var(--space-6);
-  font-size: 22px;
+  padding: clamp(10px, 2vh, 14px) clamp(20px, 5vw, 28px);
+  font-size: clamp(16px, 4vw, 20px);
   width: 100%;
-  max-width: 280px;
+  max-width: 220px;
 }
 
-/* ===== Responsive: 小高度屏(手机竖屏含 Safari 顶栏) ===== */
-/* 750px 以下: 中等收缩 */
-@media (max-height: 750px) {
-  .screen             { padding: var(--space-2) var(--space-3) var(--space-2); }
-  .screen-title       { font-size: 22px; margin-bottom: var(--space-1); }
-  .screen-subtitle    { font-size: 13px; margin-bottom: var(--space-2); }
-  .egg-stage          { height: 150px; margin-bottom: var(--space-2); }
-  .egg-size-lg         { width: 130px; height: 130px; }
-  .egg-name-input     { padding: var(--space-1) var(--space-3); font-size: 14px; margin-bottom: var(--space-2); max-width: 240px; }
-  .picker-label       { font-size: 12px; margin-bottom: 2px; }
-  .picker-row         { gap: var(--space-1); margin-bottom: var(--space-1); }
-  .color-swatch       { width: 36px; height: 36px; }
-  .exp-swatch         { padding: 4px var(--space-2); font-size: 13px; }
-  .btn-large          { padding: var(--space-2) var(--space-4); font-size: 17px; max-width: 200px; margin-top: var(--space-1); }
-  .screen > button.btn-large { margin-top: var(--space-2); }
-}
-
-/* 700px 以下: 较激收缩 */
-@media (max-height: 700px) {
-  .screen             { padding: var(--space-1) var(--space-2) var(--space-2); }
-  .screen-title       { font-size: 20px; margin-bottom: 2px; }
-  .screen-subtitle    { font-size: 12px; margin-bottom: var(--space-1); }
-  .egg-stage          { height: 120px; margin-bottom: var(--space-1); }
-  .egg-size-lg         { width: 110px; height: 110px; }
-  .egg-name-input     { padding: 4px var(--space-2); font-size: 13px; margin-bottom: var(--space-1); max-width: 220px; border-width: 2px; }
-  .picker-label       { font-size: 11px; margin-bottom: 2px; }
-  .picker-row         { gap: 2px; margin-bottom: 2px; }
-  .color-swatch       { width: 32px; height: 32px; }
-  .exp-swatch         { padding: 4px var(--space-1); font-size: 12px; }
-  .btn-large          { padding: var(--space-1) var(--space-3); font-size: 15px; max-width: 180px; margin-top: var(--space-1); }
-  .screen > button.btn-large { margin-top: var(--space-1); }
-}
-
-/* 640px 以下: 极限收缩 (Redmi / iPhone SE 横屏) */
-@media (max-height: 640px) {
-  .screen             { padding: 2px var(--space-2) var(--space-1); }
+/* ===== Responsive: 极小高度屏 fallback 兜底 ===== */
+/* 默认布局用 clamp() 已自适应, 此 @media 仅作极小屏 (<580px) 兜底 */
+@media (max-height: 580px) {
+  .screen             { padding: 4px 12px 6px; }
   .screen-title       { font-size: 17px; margin-bottom: 0; }
   .screen-subtitle    { font-size: 11px; margin-bottom: 2px; }
   .egg-stage          { height: 90px; margin-bottom: 2px; }
   .egg-size-lg         { width: 80px; height: 80px; }
-  .egg-name-input     { padding: 2px var(--space-2); font-size: 12px; margin-bottom: 2px; max-width: 200px; border-width: 2px; }
+  .egg-name-input     { padding: 2px 8px; font-size: 12px; margin-bottom: 2px; max-width: 200px; border-width: 2px; }
   .picker-label       { font-size: 10px; margin-bottom: 0; }
   .picker-row         { gap: 0; margin-bottom: 0; }
   .color-swatch       { width: 28px; height: 28px; }
   .exp-swatch         { padding: 2px 4px; font-size: 11px; }
-  .btn-large          { padding: 2px var(--space-2); font-size: 14px; max-width: 160px; margin-top: 2px; }
-  .screen > button.btn-large { margin-top: 2px; }
+  .btn-large          { padding: 4px 12px; font-size: 14px; max-width: 160px; margin-top: 2px; }
 }
 
 /* ===== Egg Character ===== */
@@ -179,8 +146,8 @@ button:disabled {
   display: flex;
   justify-content: center;
   align-items: flex-end;
-  height: 220px;
-  margin-bottom: var(--space-4);
+  height: clamp(120px, 32vh, 200px);
+  margin-bottom: clamp(6px, 2vh, 16px);
   position: relative;
 }
 
@@ -333,18 +300,18 @@ button:disabled {
 }
 
 /* Size variants — keep egg feet centered properly */
-.egg-size-sm { width: 80px;  height: 80px; }
-.egg-size-md { width: 120px; height: 120px; }
-.egg-size-lg { width: 180px; height: 180px; }
+.egg-size-sm { width: clamp(60px, 18vw, 80px);  height: clamp(60px, 18vw, 80px); }
+.egg-size-md { width: clamp(90px, 28vw, 120px); height: clamp(90px, 28vw, 120px); }
+.egg-size-lg { width: clamp(110px, 32vw, 160px); height: clamp(110px, 32vw, 160px); }
 
 /* ===== Egg Create Screen extras ===== */
 
 .egg-name-input {
   width: 100%;
-  max-width: 280px;
-  padding: var(--space-3) var(--space-4);
-  margin-bottom: var(--space-4);
-  font-size: 18px;
+  max-width: 260px;
+  padding: clamp(8px, 2vh, 12px) clamp(12px, 3vw, 16px);
+  margin-bottom: clamp(6px, 2vh, 16px);
+  font-size: clamp(14px, 3.5vw, 17px);
   font-family: inherit;
   text-align: center;
   border: 3px solid var(--egg-yellow);
@@ -361,23 +328,23 @@ button:disabled {
 }
 
 .picker-label {
-  font-size: 14px;
+  font-size: clamp(11px, 2.5vw, 13px);
   color: var(--text-secondary);
-  margin: var(--space-2) 0 var(--space-1);
+  margin: clamp(2px, 1vh, 8px) 0 clamp(2px, 1vh, 6px);
   font-weight: 600;
 }
 
 .picker-row {
   display: flex;
-  gap: var(--space-2);
-  margin-bottom: var(--space-3);
+  gap: clamp(4px, 2vw, 12px);
+  margin-bottom: clamp(4px, 1.5vh, 10px);
   justify-content: center;
   flex-wrap: wrap;
 }
 
 .color-swatch {
-  width: 56px;
-  height: 56px;
+  width: clamp(38px, 12vw, 52px);
+  height: clamp(38px, 12vw, 52px);
   border-radius: 50%;
   border: 3px solid transparent;
   padding: 0;
@@ -399,8 +366,8 @@ button:disabled {
 .color-swatch[data-color="purple"] { background: #C8A2FF; }
 
 .exp-swatch {
-  padding: var(--space-2) var(--space-4);
-  font-size: 16px;
+  padding: clamp(6px, 1.5vh, 10px) clamp(12px, 3vw, 18px);
+  font-size: clamp(13px, 3vw, 15px);
   border-radius: 20px;
   background: white;
   color: var(--text-primary);
@@ -416,7 +383,7 @@ button:disabled {
 }
 
 .screen > button.btn-large {
-  margin-top: var(--space-4);
+  margin-top: clamp(8px, 2vh, 16px);
 }
 
 /* ===== PWA "add to home" hint bubble ===== */
