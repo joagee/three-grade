@@ -107,7 +107,9 @@
 
   function speakGoogle(text, opts = {}) {
     const lang = opts.lang || "en-US";
-    return fetch("/api/tts?text=" + encodeURIComponent(text) + "&lang=" + lang)
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
+    const gain = isIOS ? 12 : 6;
+    return fetch("/api/tts?text=" + encodeURIComponent(text) + "&lang=" + lang + "&gain=" + gain)
       .then(r => {
         if (!r.ok) throw new Error("TTS API error: " + r.status);
         return r.blob();

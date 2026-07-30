@@ -20,10 +20,12 @@ export async function onRequest(context) {
     return new Response('Server config error: missing GOOGLE_TTS_KEY', { status: 500 });
   }
 
+  const gain = parseFloat(url.searchParams.get('gain')) || 6.0;
+
   const body = {
     input: { text },
     voice: { languageCode: lang },
-    audioConfig: { audioEncoding: 'MP3', speakingRate: 0.9, volumeGainDb: 6.0 }
+    audioConfig: { audioEncoding: 'MP3', speakingRate: 0.9, volumeGainDb: gain }
   };
 
   if (lang === 'en-US') {
