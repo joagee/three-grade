@@ -192,6 +192,7 @@
     doors.className = "map-doors";
 
     const currentLevelId = window.App.state.getCurrentLevelId();
+    const session = window.App.state.loadLevelSession();
 
     unit.levels.forEach((lv, idx) => {
       const door = document.createElement("button");
@@ -201,10 +202,12 @@
       const isComplete = window.App.state.isDayComplete(lv.id);
       const isCurrent = lv.id === currentLevelId;
       const isLocked = !isComplete && !isCurrent && (lv.day > st.progress.currentDay);
+      const canResume = session && session.levelId === lv.id && !isComplete;
 
       if (isComplete) door.classList.add("level-door--done");
-      if (isCurrent && !isComplete) door.classList.add("level-door--current");
-      if (isLocked) door.classList.add("level-door--locked");
+      if (isCurrent && !isComplete && !canResume) door.classList.add("level-door--current");
+      if (canResume) door.classList.add("level-door--resume");
+      if (isLocked && !canResume) door.classList.add("level-door--locked");
 
       door.innerHTML = `
         <div class="level-door-day">第 ${lv.day} 关</div>
@@ -225,12 +228,12 @@
         }
       }
 
-      if (isLocked) {
+      if (isLocked && !canResume) {
         door.disabled = true;
         door.setAttribute("aria-label", `第 ${lv.day} 关 未解锁`);
       } else {
         door.addEventListener("click", () => {
-          if (lv.id === currentLevelId) {
+          if (lv.id === currentLevelId || canResume) {
             console.log("[map] enter today:", lv.id);
             window.App.go("level", { levelId: lv.id });
           } else {

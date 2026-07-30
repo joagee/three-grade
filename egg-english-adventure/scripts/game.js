@@ -28,12 +28,16 @@
       if (onEnd) onEnd({ stars: 0, attemptedWords: [], correctCount: 0, totalChallenges: 0, completed: false });
       return;
     }
-    _attemptedWords = [];
+
+    const session = window.App.state.loadLevelSession();
+    const resume = session && session.levelId === levelId ? session : null;
+
+    _attemptedWords = resume ? resume.attemptedWords.slice() : [];
 
     const st = {
       level,
-      index: 0,
-      correctCount: 0
+      index: resume ? Math.min(resume.index, level.challenges.length - 1) : 0,
+      correctCount: resume ? resume.correctCount : 0
     };
 
     renderFrame(container, st, onEnd);
@@ -107,9 +111,9 @@
       case "read-after":
         return renderReadAfter(quizArea, eggHolder, ch, st, onPass);
       case "letter-sound":
+        return renderLetterSound(quizArea, eggHolder, ch, st, onPass);
       case "drag-match":
-        recordWord(getWordFromChallenge(ch));
-        return onPass();
+        return renderDragMatch(quizArea, eggHolder, ch, st, onPass);
       default:
         console.warn("[game] unknown type:", ch.type);
         return onPass();
@@ -155,6 +159,7 @@
     // 任意按钮点击都视为通过, 不判分
     quizArea.querySelector(".quiz-learn-next").addEventListener("click", () => {
       // 直接进下一题, 不计 correctCount (跟读回顾题算重试过不算)
+      window.App.state.saveLevelSession(st.level.id, st.index + 1, st.correctCount, _attemptedWords);
       onPass();
     });
   }
@@ -282,6 +287,106 @@
   }
 
 
+  // ===== 字母拼读 (Task 7) =====
+  function renderLetterSound(quizArea, eggHolder, ch, st, onPass) {
+    recordWord(ch.word);
+
+    quizArea.innerHTML = `
+      <div class="quiz-prompt">听一听，选出单词的首字母</div>
+      <button class="quiz-replay" aria-label="再听一次">🔊 再听一次</button>
+      <div class="quiz-target">${ch.word}</div>
+      ${ch.phonetic ? `<div class="quiz-phonetic">${ch.phonetic}</div>` : ""}
+      <div class="quiz-options quiz-options-letters">
+        ${ch.options.map((letter, i) => `
+          <button class="quiz-option-letter" data-letter="${letter}">${letter}</button>
+        `).join("")}
+      </div>
+    `;
+
+    const speak = () => window.App.speech.speak(ch.word);
+    speak();
+
+    quizArea.querySelector(".quiz-replay").addEventListener("click", speak);
+
+    quizArea.querySelectorAll(".quiz-option-letter").forEach(btn => {
+      btn.addEventListener("click", () => {
+        judge(quizArea, eggHolder, btn.dataset.letter === ch.answer, st, onPass);
+      });
+    });
+  }
+
+
+  // ===== 拖拽配对 (Task 7) =====
+  function renderDragMatch(quizArea, eggHolder, ch, st, onPass) {
+    recordWord(ch.target || (ch.pairs && ch.pairs[0] ? ch.pairs[0].word : ""));
+
+    const pairs = ch.pairs.slice();
+    const emojiTargets = pairs.map(p => p.image).sort(() => Math.random() - 0.5);
+    const wordPills = pairs.map(p => ({ word: p.word, image: p.image })).sort(() => Math.random() - 0.5);
+
+    let selectedPill = null;
+    let matchedCount = 0;
+
+    quizArea.innerHTML = `
+      <div class="quiz-prompt">将单词拖到正确的图片上</div>
+      <div class="drag-emoji-row">
+        ${emojiTargets.map((emoji, i) => `
+          <div class="drag-emoji-target" data-image="${emoji}">
+            <span class="drag-emoji">${emoji}</span>
+            <span class="drag-check">?</span>
+          </div>
+        `).join("")}
+      </div>
+      <div class="drag-word-row">
+        ${wordPills.map((w, i) => `
+          <button class="drag-word-pill" data-word="${w.word}" data-image="${w.image}">${w.word}</button>
+        `).join("")}
+      </div>
+    `;
+
+    const onAllMatched = () => {
+      if (window.App.speech) window.App.speech.playCorrect();
+      setTimeout(() => pass(quizArea, eggHolder, st, onPass), 600);
+    };
+
+    quizArea.querySelectorAll(".drag-word-pill").forEach(pill => {
+      pill.addEventListener("click", () => {
+        if (selectedPill) selectedPill.classList.remove("drag-word-selected");
+        selectedPill = pill;
+        pill.classList.add("drag-word-selected");
+      });
+    });
+
+    quizArea.querySelectorAll(".drag-emoji-target").forEach(target => {
+      target.addEventListener("click", () => {
+        if (!selectedPill || target.classList.contains("drag-emoji-matched")) return;
+
+        const targetImage = target.dataset.image;
+        const pillImage = selectedPill.dataset.image;
+
+        if (targetImage === pillImage) {
+          target.querySelector(".drag-check").textContent = "✓";
+          target.classList.add("drag-emoji-matched");
+          selectedPill.style.display = "none";
+          selectedPill.classList.remove("drag-word-selected");
+          selectedPill = null;
+          matchedCount++;
+
+          if (matchedCount >= pairs.length) {
+            onAllMatched();
+          }
+        } else {
+          selectedPill.classList.add("drag-word-shake");
+          setTimeout(() => {
+            selectedPill.classList.remove("drag-word-selected", "drag-word-shake");
+            selectedPill = null;
+          }, 400);
+        }
+      });
+    });
+  }
+
+
   // ===== 判分 + 动画 =====
   function judge(quizArea, eggHolder, isRight, st, onPass) {
     if (isRight) {
@@ -317,6 +422,7 @@
   function pass(quizArea, eggHolder, st, onPass) {
     st.correctCount += 1;
     if (window.App.speech) window.App.speech.playCorrect();
+    window.App.state.saveLevelSession(st.level.id, st.index, st.correctCount, _attemptedWords);
     eggCheer(eggHolder);
     quizArea.classList.add("quiz-area--correct");
     setTimeout(() => onPass(), 800);
@@ -351,6 +457,7 @@
 
 
   function onLevelEnd(container, st, onEnd) {
+    window.App.state.clearLevelSession();
     const correct = st.correctCount;
     const total = st.level.challenges.length;
     let stars = 1;

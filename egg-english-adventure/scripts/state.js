@@ -178,6 +178,24 @@ const state = {
 
   getAllReports() {
     return this.data.dailyReport.slice().reverse();
+  },
+
+  // ===== Level session (Task 7: crash-resume) =====
+
+  saveLevelSession(levelId, index, correctCount, attemptedWords) {
+    this.update(s => {
+      s._levelSession = { levelId, index, correctCount, attemptedWords: (attemptedWords || []).slice() };
+    });
+  },
+
+  loadLevelSession() {
+    return this.data._levelSession || null;
+  },
+
+  clearLevelSession() {
+    this.update(s => {
+      delete s._levelSession;
+    });
   }
 };
 

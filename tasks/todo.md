@@ -155,20 +155,20 @@
 **Description:** 实现听音选图、看图选词、跟读闯关三种题型引擎，每关 5 题依次出现，答错弹回当前题。
 
 **Acceptance criteria:**
-- [ ] **听音选图**：TTS 朗读单词 → 显示 3 张图 → 点击正确图，对错反馈
-- [ ] **看图选词**：显示 1 张图 → 显示 3 个英文单词 → 点击正确单词
-- [ ] **跟读闯关**：TTS 示范 → 孩子说话 → SpeechRecognition 比对 → 显示评分（0-100 分）+ 鼓励话
-- [ ] 每关 5 题依次出现，答错弹回当前题重试不跳过
-- [ ] 通过 data.js 中题目配置 `type` 字段路由到对应引擎
+- [x] **听音选图**：TTS 朗读单词 → 显示 3 张图 → 点击正确图，对错反馈  *(game.js:164-191 renderListenChoose)*
+- [x] **看图选词**：显示 1 张图 → 显示 3 个英文单词 → 点击正确单词  *(game.js:194-214 renderLookChoose)*
+- [x] **跟读闯关**：TTS 示范 → 孩子说话 → SpeechRecognition 比对 → 显示评分（0-100 分）+ 鼓励话  *(game.js:218-281 renderReadAfter)*
+- [x] 每关 5 题依次出现，答错弹回当前题重试不跳过  *(game.js:85-93 循环 + 290-299 重试；部分关>5题实为更多内容)*
+- [x] 通过 data.js 中题目配置 `type` 字段路由到对应引擎  *(game.js:100-116 switch 路由)*
 
 **Verification:**
 - [ ] 控制 `data.js` 中所有题目 type 设为 `listen-choose` 时只跑听音选图题
-- [ ] 跟读题型在 Safari 中自动跳过不报错
-- [ ] 答对答错视觉反馈明确（蛋仔欢呼/摔倒动画）
+- [x] 跟读题型在 Safari 中自动跳过不报错  *(game.js:219-223 hasRecognition=false→skip)*
+- [x] 答对答错视觉反馈明确（蛋仔欢呼/摔倒动画）  *(game.js:316-337 eggCheer/eggFall)*
 
-**Dependencies:** Task 2, Task 3
+**Dependencies:** Task 2, Task 3 ✅
 
-**Files likely touched:**
+**Files touched:**
 - `egg-english-adventure/scripts/game.js`（题型引擎 + 关卡流程）
 - `egg-english-adventure/styles.css` (题目样式)
 - `egg-english-adventure/scripts/data.js`（补全题目结构）
