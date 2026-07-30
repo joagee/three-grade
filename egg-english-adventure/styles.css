@@ -881,6 +881,18 @@ button:disabled {
   100% { transform: rotate(0) translateY(0); }
 }
 
+/* ===== 按钮呼吸动效 ===== */
+@keyframes breathe {
+  0%   { transform: scale(1); }
+  15%  { transform: scale(1.07); }
+  45%  { transform: scale(0.98); }
+  75%  { transform: scale(1.03); }
+  100% { transform: scale(1); }
+}
+button.btn-breathe {
+  animation: breathe 0.5s ease-out;
+}
+
 /* ===== 通关结算页 ===== */
 
 .game-summary {

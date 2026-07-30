@@ -40,4 +40,15 @@
       go("egg-create");
     }
   });
+
+  // 按钮点击反馈：呼吸动效
+  appContainer.addEventListener("click", (e) => {
+    const btn = e.target.closest("button");
+    if (btn && !btn.disabled) {
+      btn.classList.add("btn-breathe");
+      btn.addEventListener("animationend", () => {
+        btn.classList.remove("btn-breathe");
+      }, { once: true });
+    }
+  });
 })();
