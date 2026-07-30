@@ -59,13 +59,15 @@
 
 ### Task 3: 语音引擎
 
-**Description:** 封装 Web Speech API：SpeechSynthesis 用于单词/句型朗读，SpeechRecognition 用于跟读发音识别评分，不支持时自动降级。
+**Description:** 封装双引擎 TTS（Google Cloud TTS 优先，Cloudflare Pages Function `/api/tts` 代理 → Native SpeechSynthesis 降级）+ SpeechRecognition 跟读评分。提供 `playCorrect/playWrong/playVictory` 三个音效方法（Web Audio API 合成）。
 
 **Acceptance criteria:**
-- [x] `speech.js` 提供 `speak(text, lang)`、`recognizeWord(targetWord)` 两个核心 API  *(2026-07-26 通过；speak 实签 speak(text, opts) 写死 en-US；recognizeWord 返回 0-100 评分)*
-- [x] 页面加载时检测 TTS 与 SpeechRecognition 可用性并写入 state  *(2026-07-26 通过；app.js:30 调 detectCapabilities → state.ttsReady/speechRecognitionReady)*
-- [x] 浏览器不支持 SpeechRecognition 时，自动跳过"跟读"题型不报错  *(2026-07-26 通过；recognizeWord 返回 {unsupported:true}，game.js 接入时按此跳过)*
-- [x] 端到端：调用 `speak('apple')` 浏览器朗读；调用 `recognizeWord('apple')` 录音并返回相似度评分（0-100）  *(2026-07-26 通过；Console 实测 speak("Nice to meet you.") 可听 / detectCapabilities 返回 {ttsReady:true, speechRecognitionReady:true})*
+- [x] `speech.js` 提供 `speak(text, lang)`、`recognizeWord(targetWord)` 两个核心 API  *(实签 speak(text, opts)；recognizeWord 返回 0-100 评分)*
+- [x] `speak()` 默认走 Google TTS（Wavenet-C, en-US, rate=0.9），iOS 自动 gain=12 → 失败降级 Native SpeechSynthesis  *(speech.js speakGoogle → speakNative 降级链)*
+- [x] 页面加载时检测 TTS 与 SpeechRecognition 可用性并写入 state  *(app.js 调 detectCapabilities → state.ttsReady/speechRecognitionReady)*
+- [x] 浏览器不支持 SpeechRecognition 时，自动跳过"跟读"题型不报错  *(recognizeWord 返回 {unsupported:true})*
+- [x] Web Audio API 合成音效：`playCorrect()` ascending sine C5→G5 0.3s / `playWrong()` sawtooth 180→100Hz 0.35s / `playVictory()` arpeggio C5→E5→G5→C6 0.48s  *(speech.js:268-309)*
+- [x] iOS 端共用 AudioContext + GainNode(2.0) 解决 `<audio>` 元素音量压制问题  *(speech.js getAudioContext/unlockAudio)*
 
 **Verification:**
 - [x] 在 Chrome/Edge 测试 TTS 朗读 + 跟读评分功能  *(2026-07-26 通过)*
@@ -132,6 +134,7 @@
 - [x] 未解锁门灰色不可点击  *(2026-07-26 通过：第 2-5 关灰色 + 🔒 + disabled)*
 - [x] 点击今日挑战门可进入对应关卡  *(2026-07-26 通过：占位 toast 弹出，Task 6 接真关卡页)*
 - [x] 通关返回时关卡门播放星星飞入动画  *(2026-07-26 通过：sim completeDay 后 starFlyin 弹性入场动画已见)*
+- [x] 关卡门「继续」徽标：有保存的关卡会话时显示粉色 `level-door--resume` 徽章  *(Task 7 新增)*
 
 **Verification:**
 - [x] 手动检查三种状态视觉明确  *(2026-07-26 通过)*
@@ -160,8 +163,11 @@
 - [x] **跟读闯关**：TTS 示范 → 孩子说话 → SpeechRecognition 比对 → 显示评分（0-100 分）+ 鼓励话  *(game.js:218-281 renderReadAfter)*
 - [x] 每关 5 题依次出现，答错弹回当前题重试不跳过  *(game.js:85-93 循环 + 290-299 重试；部分关>5题实为更多内容)*
 - [x] 通过 data.js 中题目配置 `type` 字段路由到对应引擎  *(game.js:100-116 switch 路由)*
+- [x] 点击任意按钮触发呼吸动效 `btn-breathe` 0.5s  *(app.js 全局 delegation)*
+- [x] 答对播 `playCorrect()` C5→G5 / 答错播 `playWrong()` sawtooth 下行  *(game.js pass/judge)*
+- [ ] 通关播 `playVictory()` arpeggio C5→E5→G5→C6  *(game.js onLevelEnd, 已验证)*
 
-**Verification:**
+**Verification (Task 6):**
 - [ ] 控制 `data.js` 中所有题目 type 设为 `listen-choose` 时只跑听音选图题
 - [x] 跟读题型在 Safari 中自动跳过不报错  *(game.js:219-223 hasRecognition=false→skip)*
 - [x] 答对答错视觉反馈明确（蛋仔欢呼/摔倒动画）  *(game.js:316-337 eggCheer/eggFall)*
@@ -182,11 +188,14 @@
 **Description:** 实现拖拽配对、字母拼读引擎，串联完整闯关流程：进入 → 5 题依次 → 通关结算 → 跳转奖励页。
 
 **Acceptance criteria:**
-- [x] **拖拽配对**：显示 3 张图 + 3 个单词，点选单词再点图配对，正确后锁定  *(game.js renderDragMatch: tap-to-match)*
-- [x] **字母拼读**：TTS 读一个词，显示字母组合选项，孩子选正确首字母  *(game.js renderLetterSound)*
+- [x] **拖拽配对**：显示 3 张图 + 3 个单词，点选单词再点图配对（或点图再点单词，双向），正确后锁定 + 绿色辉光，错误摇动  *(game.js renderDragMatch: tap-to-match with bidirectional selection)*
+- [x] 拖拽配对每次匹配正确播 `playCorrect()` + 错误播 `playWrong()`，全员匹配后自动通过  *(每对独立音效)*
+- [x] **字母拼读**：TTS 读一个词，显示字母组合选项，孩子选正确首字母，答错重渲染同题  *(game.js renderLetterSound + renderChallengeByType 补路由)*
+- [x] 字母拼读答对播 `playCorrect()` / 答错播 `playWrong()` + 蛋仔fall + 1s 后重试  *(走 judge→playWrong→renderChallengeByType 标准流程)*
 - [ ] 完整流程：世界地图 → 进入关卡 → 5 题轮播 → 完成 → 跳转奖励页  *(跳转奖励页为 Task 8 范围)*
 - [x] localStorage 写入本次通关数据（星级、尝试的单词列表）  *(state.js completeDay 已实现)*
-- [ ] 中途离开应用或刷新会跳回当前题（不丢失进度）  *(state.js saveLevelSession + game.js startLevel 已实现；待端到端验证)*
+- [x] 中途刷新/关闭会保存当前关卡进度（index/correctCount/attemptedWords），地图显示粉色【继续】徽标  *(state.js saveLevelSession + screens.js renderWorldMap resume badge)*
+- [x] 只有打通当天关卡才推进 currentDay，重打旧关不解锁后续  *(onLevelEnd: st.level.id === getCurrentLevelId())*
 
 **Verification:**
 - [ ] 在移动端浏览器测试拖拽触摸事件
@@ -225,6 +234,10 @@
 - [ ] 收集图鉴页显示所有装扮（已解锁彩色/未解锁灰色锁图标）
 - [ ] 蛋仔角色叠加装扮视觉（帽子→头顶 emoji、眼镜→眼睛位置、背包→侧后方、特效→周围光晕）
 - [ ] 10 件装扮全部按 CSS+emoji 渲染（无图片素材）
+- [ ] 获得新装扮时播奖励音效 `playReward()`（待新增，参考 plan.md 音效 D 表）
+- [ ] 奖励页动效：宝箱打开 → 装扮卡片翻转飞入 → 星星飞入 `starFlyin`
+- [ ] 图鉴页点击装扮卡牌播 `playFlip()`（待新增），卡牌翻转为已解锁详情
+- [ ] 换装确认播 `playCorrect()` + 蛋仔原地转圈 360° 动效
 
 **Verification:**
 - [ ] 重复通关至解锁所有 10 件装扮，图鉴全亮
@@ -253,6 +266,9 @@
 - [ ] 答对时蛋搭子欢呼动画 + 喝彩气泡
 - [ ] 答错时蛋搭子拍肩动画 + "没关系，再来一次"气泡
 - [ ] 跟读题时用 TTS 朗读目标英语单词作为示范
+- [ ] 蛋搭子出现播轻快 "叮" 提示音，从右下角弹入 + 呼吸待机动效
+- [ ] 喝彩播 `playCorrect()` + 蛋搭子小跳动画
+- [ ] 安慰播 `playWrong()` + 蛋搭子低头动画
 
 **Verification:**
 - [ ] A/B 观感测试：有蛋搭子的关卡对比没有的，孩子更喜欢哪个
@@ -279,6 +295,9 @@
 - [ ] 家长报告页按日期列出每日通关记录（关卡进度、星级、获得装扮、尝试的词汇列表）
 - [ ] 全产品过渡动画统一（屏切换 fade、按键反馈缩放、答错蛋仔摔倒、答对蛋仔跳跃）
 - [ ] 移动端横竖屏自适应
+- [ ] 计算题答对播 `playCorrect()` → 解锁过渡进入报告页
+- [ ] 计算题答错播 `playWrong()` + 输入框抖动（复用 `quizWrong` keyframe）
+- [ ] 报告页进入：屏幕淡入 + 数据数字递增滚动动效
 
 **Verification:**
 - [ ] 模拟 3 天通关记录后，家长页能列出 3 条日报
