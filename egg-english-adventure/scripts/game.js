@@ -325,6 +325,7 @@
     const wordPills = pairs.map(p => ({ word: p.word, image: p.image })).sort(() => Math.random() - 0.5);
 
     let selectedPill = null;
+    let selectedTarget = null;
     let matchedCount = 0;
 
     quizArea.innerHTML = `
@@ -344,43 +345,57 @@
       </div>
     `;
 
-    const onAllMatched = () => {
-      if (window.App.speech) window.App.speech.playCorrect();
-      setTimeout(() => pass(quizArea, eggHolder, st, onPass), 600);
+    const clearSelections = () => {
+      if (selectedPill) { selectedPill.classList.remove("drag-word-selected"); selectedPill = null; }
+      if (selectedTarget) { selectedTarget.classList.remove("drag-target-selected"); selectedTarget = null; }
+    };
+
+    const tryMatch = (pill, target) => {
+      if (target.dataset.image === pill.dataset.image) {
+        target.querySelector(".drag-check").textContent = "✓";
+        target.classList.add("drag-emoji-matched");
+        pill.style.display = "none";
+        clearSelections();
+        matchedCount++;
+        if (window.App.speech) window.App.speech.playCorrect();
+        if (matchedCount >= pairs.length) {
+          const onAllMatched = () => {
+            setTimeout(() => pass(quizArea, eggHolder, st, onPass), 600);
+          };
+          setTimeout(onAllMatched, 400);
+        }
+      } else {
+        pill.classList.add("drag-word-shake");
+        if (window.App.speech) window.App.speech.playWrong();
+        setTimeout(() => {
+          pill.classList.remove("drag-word-shake");
+          clearSelections();
+        }, 400);
+      }
     };
 
     quizArea.querySelectorAll(".drag-word-pill").forEach(pill => {
       pill.addEventListener("click", () => {
-        if (selectedPill) selectedPill.classList.remove("drag-word-selected");
-        selectedPill = pill;
-        pill.classList.add("drag-word-selected");
+        if (pill.style.display === "none") return;
+        if (selectedTarget) {
+          tryMatch(pill, selectedTarget);
+        } else {
+          if (selectedPill) selectedPill.classList.remove("drag-word-selected");
+          selectedPill = pill;
+          pill.classList.add("drag-word-selected");
+        }
       });
     });
 
     quizArea.querySelectorAll(".drag-emoji-target").forEach(target => {
       target.addEventListener("click", () => {
-        if (!selectedPill || target.classList.contains("drag-emoji-matched")) return;
-
-        const targetImage = target.dataset.image;
-        const pillImage = selectedPill.dataset.image;
-
-        if (targetImage === pillImage) {
-          target.querySelector(".drag-check").textContent = "✓";
-          target.classList.add("drag-emoji-matched");
-          selectedPill.style.display = "none";
-          selectedPill.classList.remove("drag-word-selected");
-          selectedPill = null;
-          matchedCount++;
-
-          if (matchedCount >= pairs.length) {
-            onAllMatched();
-          }
+        if (target.classList.contains("drag-emoji-matched")) return;
+        if (selectedPill) {
+          tryMatch(selectedPill, target);
         } else {
-          selectedPill.classList.add("drag-word-shake");
-          setTimeout(() => {
-            selectedPill.classList.remove("drag-word-selected", "drag-word-shake");
-            selectedPill = null;
-          }, 400);
+          if (selectedTarget) selectedTarget.classList.remove("drag-target-selected");
+          selectedTarget = target;
+          target.classList.add("drag-target-selected");
         }
       });
     });
@@ -411,10 +426,13 @@
       case "learn-intro":
         // learn-intro 不会答错, 不会进此分支, 仅防漏
         return renderLearnIntro(quizArea, eggHolder, ch, st, onPass);
-      case "listen-choose": return renderListenChoose(quizArea, eggHolder, ch, st, onPass);
-      case "look-choose":   return renderLookChoose(quizArea, eggHolder, ch, st, onPass);
-      case "read-after":    return renderReadAfter(quizArea, eggHolder, ch, st, onPass);
+      case "listen-choose":  return renderListenChoose(quizArea, eggHolder, ch, st, onPass);
+      case "look-choose":    return renderLookChoose(quizArea, eggHolder, ch, st, onPass);
+      case "read-after":     return renderReadAfter(quizArea, eggHolder, ch, st, onPass);
+      case "letter-sound":   return renderLetterSound(quizArea, eggHolder, ch, st, onPass);
+      case "drag-match":     return renderDragMatch(quizArea, eggHolder, ch, st, onPass);
       default:
+        console.warn("[game] renderChallengeByType unknown:", ch.type);
         onPass();
     }
   }
@@ -485,7 +503,9 @@
     `;
     if (window.App.speech) setTimeout(() => window.App.speech.playVictory(), 200);
     container.querySelector(".game-back-btn").addEventListener("click", () => {
-      window.App.state.advanceDay();
+      if (st.level.id === window.App.state.getCurrentLevelId()) {
+        window.App.state.advanceDay();
+      }
       if (onEnd) onEnd(summary);
       window.App.go("world-map");
     });

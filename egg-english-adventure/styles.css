@@ -973,6 +973,11 @@ button.btn-breathe {
 }
 .drag-emoji-target:active { transform: scale(0.94); }
 
+.drag-emoji-target.drag-target-selected {
+  transform: scale(1.08);
+  box-shadow: 0 0 0 4px rgba(107, 203, 239, 0.5), var(--shadow-pop);
+}
+
 .drag-emoji-target.drag-emoji-matched {
   border: 3px solid var(--egg-green);
   box-shadow: 0 0 0 4px rgba(149, 224, 108, 0.25);
