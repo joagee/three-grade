@@ -53,12 +53,24 @@
     setTimeout(() => resolve(!!preferredVoice), 1000);
   });
 
+  // Shared AudioContext for Web Audio API playback (bypasses iOS Audio element volume limits)
+  let audioCtx = null;
+  function getAudioContext() {
+    if (!audioCtx) {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    return audioCtx;
+  }
+
   // Android Chrome autoplay unlock: 首次用户交互时, 用极短 utterance 触发音频通道
   // 用 "ok" 而非空串 (Android Chrome 对空串 utterance 可能不解锁)
   let unlocked = false;
   function unlockAudio() {
     if (unlocked || !hasSynth) return;
     unlocked = true;
+    if (audioCtx && audioCtx.state === 'suspended') {
+      audioCtx.resume().catch(() => {});
+    }
     try {
       const u = new SpeechSynthesisUtterance("ok");
       u.volume = 0.01;
@@ -105,8 +117,6 @@
     });
   }
 
-  let googleAudioEl = null;
-
   function speakGoogle(text, opts = {}) {
     const lang = opts.lang || "en-US";
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -114,24 +124,22 @@
     return fetch("/api/tts?text=" + encodeURIComponent(text) + "&lang=" + lang + "&gain=" + gain)
       .then(r => {
         if (!r.ok) throw new Error("TTS API error: " + r.status);
-        return r.blob();
+        return r.arrayBuffer();
       })
-      .then(blob => {
-        const audioUrl = URL.createObjectURL(blob);
-        return new Promise(resolve => {
-          if (!googleAudioEl) {
-            googleAudioEl = new Audio();
-            googleAudioEl.volume = 1.0;
-          }
-          const audio = googleAudioEl;
-          const prevUrl = audio.dataset.blobUrl;
-          if (prevUrl) URL.revokeObjectURL(prevUrl);
-          audio.dataset.blobUrl = audioUrl;
-          audio.src = audioUrl;
-          audio.onended = () => resolve(true);
-          audio.onerror = () => resolve(false);
-          audio.play().catch(() => resolve(false));
-        });
+      .then(buffer => {
+        const ctx = getAudioContext();
+        return (ctx.state === 'suspended' ? ctx.resume() : Promise.resolve())
+          .then(() => ctx.decodeAudioData(buffer))
+          .then(audioBuffer => new Promise(resolve => {
+            const source = ctx.createBufferSource();
+            source.buffer = audioBuffer;
+            const gainNode = ctx.createGain();
+            gainNode.gain.value = 2.0;
+            source.connect(gainNode);
+            gainNode.connect(ctx.destination);
+            source.onended = () => resolve(true);
+            source.start(0);
+          }));
       })
       .catch(() => false);
   }
