@@ -81,7 +81,8 @@
     window.App.egg.render(eggHolder, {
       color: s.egg.color,
       expression: s.egg.expression,
-      size: "md"
+      size: "md",
+      accessories: s.egg.accessories
     });
 
     container.appendChild(frame);
@@ -484,31 +485,21 @@
 
     window.App.state.completeDay(st.level.id, stars, _attemptedWords);
 
+    if (st.level.id === window.App.state.getCurrentLevelId()) {
+      window.App.state.advanceDay();
+    }
+
     const summary = {
       stars,
       attemptedWords: _attemptedWords.slice(),
       correctCount: correct,
       totalChallenges: total,
+      levelId: st.level.id,
       completed: true
     };
     console.log("[game] level end:", summary);
 
-    container.innerHTML = `
-      <div class="screen game-summary">
-        <div class="game-stars">${"★".repeat(stars)}${"☆".repeat(3 - stars)}</div>
-        <div class="game-summary-title">闯关成功！</div>
-        <div class="game-summary-sub">答对 ${correct} / ${total} 题</div>
-        <button class="btn-primary btn-large game-back-btn">回到地图</button>
-      </div>
-    `;
-    if (window.App.speech) setTimeout(() => window.App.speech.playVictory(), 200);
-    container.querySelector(".game-back-btn").addEventListener("click", () => {
-      if (st.level.id === window.App.state.getCurrentLevelId()) {
-        window.App.state.advanceDay();
-      }
-      if (onEnd) onEnd(summary);
-      window.App.go("world-map");
-    });
+    if (onEnd) onEnd(summary);
   }
 
 

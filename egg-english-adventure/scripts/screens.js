@@ -185,7 +185,8 @@
     window.App.egg.render(eggHolder, {
       color: st.egg.color,
       expression: st.egg.expression,
-      size: "sm"
+      size: "sm",
+      accessories: st.egg.accessories
     });
 
     const doors = document.createElement("div");
@@ -247,6 +248,17 @@
     });
 
     screen.append(header, eggCorner, doors);
+
+    // Collection button
+    const collectionBtn = document.createElement("button");
+    collectionBtn.className = "btn-primary btn-large";
+    collectionBtn.style.cssText = "font-size:14px;padding:8px 16px;max-width:180px;margin:8px auto 0;";
+    collectionBtn.textContent = "🎒 我的装扮";
+    collectionBtn.addEventListener("click", () => {
+      window.App.go("collection");
+    });
+    screen.appendChild(collectionBtn);
+
     container.appendChild(screen);
   }
 
@@ -259,14 +271,155 @@
     }
     window.App.game.startLevel(levelId, container, (summary) => {
       console.log("[screens] level end:", summary);
+      window.App.go("reward", { summary });
     });
+  }
+
+  function renderReward(container, params) {
+    const summary = params && params.summary;
+    if (!summary) { window.App.go("world-map"); return; }
+
+    // Unlock random accessory
+    let newAccessory = null;
+    const owned = window.App.state.getCollection();
+    const allAccs = window.App.egg.getAllAccessories();
+    const locked = allAccs.filter(a => owned.indexOf(a.id) === -1);
+    if (locked.length > 0) {
+      const pick = locked[Math.floor(Math.random() * locked.length)];
+      const newly = window.App.state.unlockAccessory(pick.id);
+      if (newly) newAccessory = pick;
+    }
+
+    container.innerHTML = "";
+    const screen = document.createElement("div");
+    screen.className = "screen reward-screen";
+
+    const starsEl = document.createElement("div");
+    starsEl.className = "reward-stars";
+    starsEl.textContent = "★".repeat(summary.stars) + "☆".repeat(3 - summary.stars);
+
+    const titleEl = document.createElement("div");
+    titleEl.className = "reward-title";
+    titleEl.textContent = summary.stars >= 3 ? "完美通关！" : "闯关成功！";
+
+    const scoreEl = document.createElement("div");
+    scoreEl.className = "reward-score";
+    scoreEl.textContent = "答对 " + summary.correctCount + " / " + summary.totalChallenges + " 题";
+
+    screen.append(starsEl, titleEl, scoreEl);
+
+    if (newAccessory) {
+      const accBox = document.createElement("div");
+      accBox.className = "reward-new-accessory";
+      accBox.innerHTML = `
+        <div class="reward-acc-emoji">${newAccessory.emoji}</div>
+        <div class="reward-acc-name">获得新装扮：${newAccessory.name}</div>
+        <div class="reward-acc-hint">已自动装备</div>
+      `;
+      screen.appendChild(accBox);
+      if (window.App.speech) setTimeout(() => window.App.speech.playReward(), 400);
+    } else {
+      const noAcc = document.createElement("div");
+      noAcc.className = "reward-no-acc";
+      noAcc.textContent = "装扮已全部集齐！太厉害了！";
+      screen.appendChild(noAcc);
+    }
+
+    screen.appendChild(starsEl); // stars animate again after append
+    starsEl.classList.add("star-flyin"); // re-trigger
+
+    const doneBtn = document.createElement("button");
+    doneBtn.className = "btn-primary btn-large game-back-btn";
+    doneBtn.textContent = "回到地图";
+    doneBtn.addEventListener("click", () => {
+      window.App.go("world-map");
+    });
+    screen.appendChild(doneBtn);
+
+    container.appendChild(screen);
+    if (window.App.speech) setTimeout(() => window.App.speech.playVictory(), 200);
+  }
+
+  function renderCollection(container) {
+    container.innerHTML = "";
+
+    const screen = document.createElement("div");
+    screen.className = "screen collection-screen";
+
+    const title = document.createElement("h1");
+    title.className = "screen-title";
+    title.textContent = "🎒 装扮图鉴";
+    screen.appendChild(title);
+
+    const grid = document.createElement("div");
+    grid.className = "collection-grid";
+
+    const owned = window.App.state.getCollection();
+    const equipped = window.App.state.data.egg.accessories;
+
+    window.App.egg.getAllAccessories().forEach(acc => {
+      const card = document.createElement("button");
+      card.className = "collection-card";
+      card.dataset.accId = acc.id;
+
+      const isOwned = owned.includes(acc.id);
+      const isEquipped = equipped.includes(acc.id);
+
+      if (isOwned) {
+        card.classList.add("collection-card--unlocked");
+        if (isEquipped) card.classList.add("collection-card--equipped");
+      } else {
+        card.classList.add("collection-card--locked");
+        card.disabled = true;
+      }
+
+      card.innerHTML = `
+        <div class="collection-card-emoji">${isOwned ? acc.emoji : "🔒"}</div>
+        <div class="collection-card-name">${acc.name}</div>
+        ${isOwned && !isEquipped ? '<div class="collection-card-lock">✓</div>' : ""}
+        ${isEquipped ? '<div class="collection-card-equip-badge">已穿戴</div>' : ""}
+      `;
+
+      if (isOwned && !isEquipped) {
+        card.addEventListener("click", () => {
+          window.App.state.equipAccessory(acc.id);
+          if (window.App.speech) window.App.speech.playFlip();
+          renderCollection(container);
+        });
+      } else if (isEquipped) {
+        card.addEventListener("click", () => {
+          // Unequip: remove from equipped
+          window.App.state.update(s => {
+            const idx = s.egg.accessories.indexOf(acc.id);
+            if (idx !== -1) s.egg.accessories.splice(idx, 1);
+          });
+          if (window.App.speech) window.App.speech.playFlip();
+          renderCollection(container);
+        });
+      }
+
+      grid.appendChild(card);
+    });
+
+    screen.appendChild(grid);
+
+    const backBtn = document.createElement("button");
+    backBtn.className = "btn-primary btn-large";
+    backBtn.style.cssText = "margin-top:var(--space-4);";
+    backBtn.textContent = "回到地图";
+    backBtn.addEventListener("click", () => { window.App.go("world-map"); });
+    screen.appendChild(backBtn);
+
+    container.appendChild(screen);
   }
 
   const screens = {
     renderEggCreate,
     renderPlaceholder,
     renderWorldMap,
-    renderLevel
+    renderLevel,
+    renderReward,
+    renderCollection
   };
 
   window.App = window.App || {};

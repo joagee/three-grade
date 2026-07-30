@@ -308,6 +308,38 @@
       osc.stop(t + 0.35);
     });
   }
+  function playReward() {
+    const ctx = getAudioContext();
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+    const notes = [523, 659, 784, 1047, 1319];
+    notes.forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      const t = ctx.currentTime + i * 0.1;
+      osc.frequency.value = freq;
+      gain.gain.setValueAtTime(0.22, t);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start(t);
+      osc.stop(t + 0.4);
+    });
+  }
+  function playFlip() {
+    const ctx = getAudioContext();
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {});
+    const t = ctx.currentTime;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'sine';
+    osc.frequency.setValueAtTime(1000, t);
+    osc.frequency.exponentialRampToValueAtTime(300, t + 0.06);
+    gain.gain.setValueAtTime(0.12, t);
+    gain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start(t);
+    osc.stop(t + 0.12);
+  }
 
   const speech = {
     speak,
@@ -317,6 +349,8 @@
     playCorrect,
     playWrong,
     playVictory,
+    playReward,
+    playFlip,
     hasSynth,
     hasRecognition,
     similarity,

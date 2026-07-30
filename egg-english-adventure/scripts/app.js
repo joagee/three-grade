@@ -11,6 +11,8 @@
     "egg-create": () => window.App.screens.renderEggCreate(appContainer),
     "world-map": () => window.App.screens.renderWorldMap(appContainer),
     "level": (params) => window.App.screens.renderLevel(appContainer, params),
+    "reward": (params) => window.App.screens.renderReward(appContainer, params),
+    "collection": () => window.App.screens.renderCollection(appContainer),
     "placeholder-world": () => window.App.screens.renderPlaceholder(appContainer)
   };
 

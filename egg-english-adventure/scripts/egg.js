@@ -31,6 +31,27 @@ const EGG_EXPRESSIONS = {
   surprised: { eye: "egg-eye egg-eye-surprised", mouth: "egg-mouth egg-mouth-surprised" }
 };
 
+const ACCESSORIES = [
+  { id: "hat_crown",  type: "hat",      name: "皇冠",   emoji: "👑", rarity: 3 },
+  { id: "hat_party",  type: "hat",      name: "派对帽", emoji: "🎉", rarity: 1 },
+  { id: "hat_wizard", type: "hat",      name: "巫师帽", emoji: "🎩", rarity: 2 },
+  { id: "glass_cool", type: "glasses",  name: "酷墨镜", emoji: "🕶",  rarity: 1 },
+  { id: "glass_heart",type: "glasses",  name: "爱心镜", emoji: "💕", rarity: 2 },
+  { id: "glass_star", type: "glasses",  name: "星星镜", emoji: "🤩", rarity: 1 },
+  { id: "back_bag",   type: "backpack", name: "小红包", emoji: "🎒", rarity: 2 },
+  { id: "back_clover",type: "backpack", name: "幸运草", emoji: "🍀", rarity: 1 },
+  { id: "fx_sparkle", type: "effect",   name: "闪闪亮", emoji: "✨", rarity: 2 },
+  { id: "fx_rainbow", type: "effect",   name: "彩虹圈", emoji: "🌈", rarity: 3 },
+];
+
+function getAccessory(id) {
+  return ACCESSORIES.find(a => a.id === id) || null;
+}
+
+function getAllAccessories() {
+  return ACCESSORIES.slice();
+}
+
 function renderEgg(container, options = {}) {
   const color = options.color && EGG_COLORS[options.color] ? options.color : "yellow";
   const expression = options.expression && EGG_EXPRESSIONS[options.expression]
@@ -73,12 +94,29 @@ function renderEgg(container, options = {}) {
 
   face.append(eyeL, eyeR, mouth);
   egg.append(shine, feet, face);
+
+  // Accessory overlays
+  const accs = options.accessories || [];
+  accs.forEach(accId => {
+    const acc = getAccessory(accId);
+    if (!acc) return;
+    const overlay = document.createElement("div");
+    overlay.className = "egg-accessory accessory-" + acc.type;
+    overlay.textContent = acc.emoji;
+    overlay.setAttribute("aria-label", acc.name);
+    overlay.dataset.accId = accId;
+    egg.appendChild(overlay);
+  });
+
   container.append(egg);
   return egg;
 }
 
 const egg = {
   render: renderEgg,
+  getAccessory,
+  getAllAccessories,
+  ACCESSORIES,
   COLORS: EGG_COLORS,
   EXPRESSIONS: EGG_EXPRESSIONS
 };
