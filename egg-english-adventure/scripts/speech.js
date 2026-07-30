@@ -105,6 +105,8 @@
     });
   }
 
+  let googleAudioEl = null;
+
   function speakGoogle(text, opts = {}) {
     const lang = opts.lang || "en-US";
     const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent);
@@ -117,11 +119,18 @@
       .then(blob => {
         const audioUrl = URL.createObjectURL(blob);
         return new Promise(resolve => {
-          const audio = new Audio(audioUrl);
-          audio.volume = 1.0;
-          audio.onended = () => { URL.revokeObjectURL(audioUrl); resolve(true); };
-          audio.onerror = () => { URL.revokeObjectURL(audioUrl); resolve(false); };
-          audio.play().catch(() => { URL.revokeObjectURL(audioUrl); resolve(false); });
+          if (!googleAudioEl) {
+            googleAudioEl = new Audio();
+            googleAudioEl.volume = 1.0;
+          }
+          const audio = googleAudioEl;
+          const prevUrl = audio.dataset.blobUrl;
+          if (prevUrl) URL.revokeObjectURL(prevUrl);
+          audio.dataset.blobUrl = audioUrl;
+          audio.src = audioUrl;
+          audio.onended = () => resolve(true);
+          audio.onerror = () => resolve(false);
+          audio.play().catch(() => resolve(false));
         });
       })
       .catch(() => false);
