@@ -288,6 +288,7 @@
       pass(quizArea, eggHolder, st, onPass);
     } else {
       _currentRetry += 1;
+      if (window.App.speech) window.App.speech.playWrong();
       eggFall(eggHolder);
       quizArea.classList.add("quiz-area--wrong");
       setTimeout(() => {
@@ -315,6 +316,7 @@
 
   function pass(quizArea, eggHolder, st, onPass) {
     st.correctCount += 1;
+    if (window.App.speech) window.App.speech.playCorrect();
     eggCheer(eggHolder);
     quizArea.classList.add("quiz-area--correct");
     setTimeout(() => onPass(), 800);
@@ -374,6 +376,7 @@
         <button class="btn-primary btn-large game-back-btn">回到地图</button>
       </div>
     `;
+    if (window.App.speech) setTimeout(() => window.App.speech.playVictory(), 200);
     container.querySelector(".game-back-btn").addEventListener("click", () => {
       window.App.state.advanceDay();
       if (onEnd) onEnd(summary);

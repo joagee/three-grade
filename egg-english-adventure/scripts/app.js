@@ -41,14 +41,18 @@
     }
   });
 
-  // 按钮点击反馈：呼吸动效
+  // 按钮点击反馈：呼吸动效（选项组内联动所有按钮）
   appContainer.addEventListener("click", (e) => {
     const btn = e.target.closest("button");
     if (btn && !btn.disabled) {
-      btn.classList.add("btn-breathe");
-      btn.addEventListener("animationend", () => {
-        btn.classList.remove("btn-breathe");
-      }, { once: true });
+      const group = btn.closest(".quiz-options-3, .quiz-options-words");
+      const targets = group ? group.querySelectorAll("button") : [btn];
+      targets.forEach(b => {
+        b.classList.add("btn-breathe");
+        b.addEventListener("animationend", () => {
+          b.classList.remove("btn-breathe");
+        }, { once: true });
+      });
     }
   });
 })();
