@@ -23,7 +23,7 @@ export async function onRequest(context) {
   const body = {
     input: { text },
     voice: { languageCode: lang },
-    audioConfig: { audioEncoding: 'MP3', speakingRate: 0.9 }
+    audioConfig: { audioEncoding: 'MP3', speakingRate: 0.9, volumeGainDb: 6.0 }
   };
 
   if (lang === 'en-US') {

@@ -72,27 +72,27 @@
     );
   }
 
-  function hasEnglishVoice() {
-    if (!synth) return false;
-    const voices = synth.getVoices();
-    return voices && voices.length > 0 && voices.some(v => v.lang && v.lang.indexOf("en") === 0);
+  function speak(text, opts = {}) {
+    const engine = opts.engine || "google";
+    if (engine === "google") {
+      return speakGoogle(text, opts).then(success => {
+        if (success) return true;
+        return speakNative(text, opts);
+      });
+    }
+    return speakNative(text, opts);
   }
 
-  function speak(text, opts = {}) {
-    const engine = opts.engine || "auto";
-    if (engine === "google") return speakGoogle(text, opts);
-    if (!hasSynth) return engine === "auto" ? speakGoogle(text, opts) : Promise.resolve(false);
+  function speakNative(text, opts = {}) {
+    if (!hasSynth) return Promise.resolve(false);
     return voicesReady.then(ok => {
-      if (!ok || !hasEnglishVoice()) {
-        if (engine !== "native") return speakGoogle(text, opts);
-        return Promise.resolve(false);
-      }
+      if (!ok) return false;
       return new Promise(resolve => {
         const u = new SpeechSynthesisUtterance(text);
         u.lang = "en-US";
         u.rate = opts.rate || 0.9;
         u.pitch = opts.pitch || 1;
-        if (preferredVoice && hasEnglishVoice()) u.voice = preferredVoice;
+        if (preferredVoice) u.voice = preferredVoice;
         u.onend = () => resolve(true);
         u.onerror = () => resolve(false);
         if (synth.speaking || synth.pending) {
@@ -116,6 +116,7 @@
         const audioUrl = URL.createObjectURL(blob);
         return new Promise(resolve => {
           const audio = new Audio(audioUrl);
+          audio.volume = 1.0;
           audio.onended = () => { URL.revokeObjectURL(audioUrl); resolve(true); };
           audio.onerror = () => { URL.revokeObjectURL(audioUrl); resolve(false); };
           audio.play().catch(() => { URL.revokeObjectURL(audioUrl); resolve(false); });
@@ -218,12 +219,18 @@
     return { score: bestScore, transcript: bestTranscript };
   }
 
+  function hasEnglishVoice() {
+    if (!synth) return false;
+    const voices = synth.getVoices();
+    return voices && voices.length > 0 && voices.some(v => v.lang && v.lang.indexOf("en") === 0);
+  }
+
   function detectCapabilities() {
     const st = window.App && window.App.state;
     voicesReady.then(() => {
-      const fallback = !hasSynth || !hasEnglishVoice();
+      const noNativeVoice = !hasSynth || !hasEnglishVoice();
       if (st) {
-        st.update(s => { s.ttsEngineFallback = fallback; });
+        st.update(s => { s.ttsEngineFallback = noNativeVoice; });
       }
     });
     if (st) {
