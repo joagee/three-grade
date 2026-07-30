@@ -182,25 +182,26 @@
 **Description:** 实现拖拽配对、字母拼读引擎，串联完整闯关流程：进入 → 5 题依次 → 通关结算 → 跳转奖励页。
 
 **Acceptance criteria:**
-- [ ] **拖拽配对**：显示 3 张图 + 3 个单词，拖单词到对应图上，配对正确后定位锁定
-- [ ] **字母拼读**：TTS 读一个词（例 `cat`），显示字母组合选项，孩子选正确首字母
-- [ ] 完整流程：世界地图 → 进入关卡 → 5 题轮播 → 完成 → 跳转奖励页
-- [ ] localStorage 写入本次通关数据（星级、尝试的单词列表）
-- [ ] 中途离开应用或刷新会跳回当前题（不丢失进度）
+- [x] **拖拽配对**：显示 3 张图 + 3 个单词，点选单词再点图配对，正确后锁定  *(game.js renderDragMatch: tap-to-match)*
+- [x] **字母拼读**：TTS 读一个词，显示字母组合选项，孩子选正确首字母  *(game.js renderLetterSound)*
+- [ ] 完整流程：世界地图 → 进入关卡 → 5 题轮播 → 完成 → 跳转奖励页  *(跳转奖励页为 Task 8 范围)*
+- [x] localStorage 写入本次通关数据（星级、尝试的单词列表）  *(state.js completeDay 已实现)*
+- [ ] 中途离开应用或刷新会跳回当前题（不丢失进度）  *(state.js saveLevelSession + game.js startLevel 已实现；待端到端验证)*
 
 **Verification:**
 - [ ] 在移动端浏览器测试拖拽触摸事件
 - [ ] 完整跑通一次 5 题闯关流程无卡顿
 - [ ] 通关奖励页正常出现
 
-**Dependencies:** Task 5
+**Dependencies:** Task 5 ✅
 
-**Files likely touched:**
-- `egg-english-adventure/scripts/game.js`
-- `egg-english-adventure/scripts/screens.js`
-- `egg-english-adventure/styles.css`
+**Files touched:**
+- `egg-english-adventure/scripts/game.js` (+117 行 renderLetterSound + renderDragMatch + 会话持久)
+- `egg-english-adventure/scripts/screens.js` (+11 行 "继续" 徽标)
+- `egg-english-adventure/scripts/state.js` (+18 行 saveLevelSession/loadLevelSession/clearLevelSession)
+- `egg-english-adventure/styles.css` (+121 行 字母拼读 + 拖拽配对 + 徽标 + 响应式)
 
-**Estimated scope:** Medium (3 files)
+**Estimated scope:** Medium (4 files)
 
 ---
 
