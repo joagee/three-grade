@@ -318,10 +318,19 @@
       `;
       screen.appendChild(accBox);
       if (window.App.speech) setTimeout(() => window.App.speech.playReward(), 400);
+
+      const afterOwned = window.App.state.getCollection();
+      if (afterOwned.length >= allAccs.length) {
+        const allDone = document.createElement("div");
+        allDone.className = "reward-no-acc";
+        allDone.textContent = "🎉 所有装扮集齐！太厉害了！";
+        allDone.style.animation = "fadeIn 0.5s ease 1s both";
+        screen.appendChild(allDone);
+      }
     } else {
       const noAcc = document.createElement("div");
       noAcc.className = "reward-no-acc";
-      noAcc.textContent = "装扮已全部集齐！太厉害了！";
+      noAcc.textContent = "🎉 装扮已全部集齐！太厉害了！";
       screen.appendChild(noAcc);
     }
 

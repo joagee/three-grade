@@ -1054,26 +1054,29 @@ button.btn-breathe {
   position: absolute;
   pointer-events: none;
   z-index: 3;
-  font-size: clamp(16px, 5vw, 28px);
   line-height: 1;
+  font-size: 24px;
 }
+.egg-size-sm .egg-accessory { font-size: 18px; }
+.egg-size-lg .egg-accessory { font-size: 32px; }
 
 .accessory-hat {
-  top: -14%;
+  top: -16%;
   left: 50%;
   transform: translateX(-50%);
 }
 
 .accessory-glasses {
-  top: 38%;
+  top: 40%;
   left: 50%;
   transform: translate(-50%, -50%);
 }
 
 .accessory-backpack {
-  right: -16%;
-  top: 52%;
+  right: -14%;
+  top: 56%;
   transform: translateY(-50%);
+  z-index: 1;
 }
 
 .accessory-effect {
